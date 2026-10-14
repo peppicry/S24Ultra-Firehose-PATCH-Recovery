@@ -238,9 +238,32 @@ Após a recuperação por PATCH, o proprietário informou ter instalado o firmwa
 completo da **One UI 8.5 pelo Odin, com configurações padrão**. Trata-se de um
 relato do proprietário, posterior aos dumps examinados nesta investigação.
 
-**O estado atual do MBR protetor ainda não foi verificado.** Os resultados da
-comparação acima descrevem os artefatos históricos; não demonstram o estado
-posterior à instalação pelo Odin nem permitem concluir se ela corrigiu esse MBR.
+Na elaboração inicial deste suplemento, o MBR protetor posterior à instalação
+pelo Odin ainda não havia sido verificado. **Em 14/10/2026, o proprietário
+informou uma verificação posterior dos campos do MBR protetor**, cuja saída
+textual está preservada no README [E13]:
+
+| Campo | Resultado informado |
+|---|---|
+| Tamanho do setor | 4096 bytes |
+| SizeInLBA esperado | 124888063 |
+| SizeInLBA encontrado | **124888063** |
+| Tipo protetor | `0xEE` |
+| Assinatura MBR | `55 AA` |
+| Identificação do header GPT | `EFI PART` |
+
+O teste informou que SizeInLBA correspondia ao valor esperado. Esse valor
+coincide com o campo do backup anterior ao ERASE relatado, em vez do zero
+observado nos dumps posteriores daquele período. A verificação foi feita pelo
+proprietário; esta atualização documental não envolveu novo acesso ao aparelho
+pelos clientes da investigação.
+
+A saída fornecida não inclui o comando completo, um dump do MBR ou os CRCs
+do header, da matriz de entradas e da GPT secundária. Os campos verificados
+não constituem uma validação integral da GPT nem demonstram qual operação
+produziu a correção. Os hashes, as 1.370 diferenças e os dumps descritos acima
+continuam sendo evidências históricas preservadas; não representam o estado
+posterior informado neste teste.
 
 ### Reprodução offline da comparação
 
@@ -426,6 +449,7 @@ substituídas por suposições ou novos testes no aparelho recuperado.
 [E10]: ../evidence/binary_manifest.json
 [E11]: ../evidence/results/pre_write_validation.json
 [E12]: ../evidence/reproduction/host_transport_inspection.json
+[E13]: ../README.md#investigação-complementar-e-verificação-posterior
 [C01]: ../historical/scripts/restore_init_boot_direct.py.txt
 [C02]: ../historical/scripts/read_current_images.py.txt
 [C03]: ../historical/scripts/restore_init_boot_patch.py.txt

@@ -40,6 +40,12 @@
       "git_blob_sha1": "29cb61a78965d26e47e6077b0b59d84ddde47f58"
     },
     {
+      "path": "docs/investigacao-complementar.md",
+      "bytes": 26118,
+      "sha256": "f621cd71b6110b2df0c68bde4c720c1784bd1f54c89b24cda36faeea683cab0e",
+      "git_blob_sha1": "1463d4c8c96b612cad7b93efd9f1f97c02afd8b6"
+    },
+    {
       "path": "docs/privacy.md",
       "bytes": 2973,
       "sha256": "00bb9d71e6e51b3c1e4b57ed78900ea3f851dacf19d32e9c308b5a2439f64ffc",
