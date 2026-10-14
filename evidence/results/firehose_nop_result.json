@@ -1,0 +1,19 @@
+{
+  "observed_at": "2026-10-14T10:18:29.973510+02:00",
+  "port": "COM20",
+  "operation": "firehose_nop_only",
+  "protocol_commands_sent": [
+    "nop"
+  ],
+  "flash_mutation_commands_sent": [],
+  "nop_bytes_sent": 59,
+  "responses": [
+    {
+      "value": "ACK",
+      "rawmode": "false"
+    }
+  ],
+  "status": "firehose_acknowledged_nop",
+  "received_size": 1893,
+  "received_text": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: Calling handler for nop\" /></data><?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: Binary build date: Jun 10 2026 @ 14:28:02\n\" /></data><?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: Chip serial num (0x0) Chip ID (0x0)\" /></data><?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: Supported Functions (15):\" /></data><?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: program\" /></data><?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: read\" /></data><?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: nop\" /></data><?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: patch\" /></data><?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: configure\" /></data><?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: setbootablestoragedrive\" /></data><?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: erase\" /></data><?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: power\" /></data><?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: firmwarewrite\" /></data><?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: getstorageinfo\" /></data><?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: benchmark\" /></data><?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: emmc\" /></data><?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: ufs\" /></data><?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: fixgpt\" /></data><?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: getsha256digest\" /></data><?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: End of supported functions 15\" /></data><?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<response value=\"ACK\" rawmode=\"false\" /></data>"
+}

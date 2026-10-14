@@ -1,0 +1,69 @@
+"""Package only the verified original init_boot for a Samsung Download client."""
+import hashlib
+import io
+import json
+import pathlib
+import tarfile
+import audit_init_boot as audit
+
+source = audit.OUT.parent/'s24-restaurar-init-boot'/'init_boot.img'
+root_source = audit.OUT.parent/'leitura-init-boot-do-celular'/'vbmeta_0'
+image = source.read_bytes()
+assert len(image)==8388608
+assert audit.sha256(image)=='f61c74bab1781862e48f8abc4a8b7865f0ba661658a3807431395edc1ce069c8'
+root = audit.parse_avb(root_source.read_bytes())
+assert root['vbmeta_hash_matches'] and root['signature_valid_against_embedded_key']
+desc = next(d for d in root['descriptors'] if d['tag']==2 and d['partition']=='init_boot')
+digest=hashlib.new(desc['hash_algorithm'])
+digest.update(bytes.fromhex(desc['salt']))
+digest.update(memoryview(image)[:desc['image_size']])
+assert digest.hexdigest()==desc['expected_digest']
+folder = audit.OUT.parent/'s24-download-init-boot'
+folder.mkdir(parents=True,exist_ok=True)
+archive = folder/'INIT_BOOT_S928B_ZZI4_STOCK.tar'
+entry=tarfile.TarInfo('init_boot.img')
+entry.size=len(image)
+entry.mode=0o644
+entry.uid=entry.gid=0
+entry.mtime=0
+with tarfile.open(archive,'w',format=tarfile.USTAR_FORMAT) as tar:
+    tar.addfile(entry,io.BytesIO(image))
+with tarfile.open(archive,'r:') as tar:
+    entries=tar.getmembers()
+    assert len(entries)==1 and entries[0].name=='init_boot.img' and entries[0].isfile()
+    assert tar.extractfile(entries[0]).read()==image
+manifest={
+    'archive':str(archive),'archive_sha256':audit.sha256(archive.read_bytes()),
+    'archive_format':'USTAR','entry_count':1,'entry':'init_boot.img',
+    'image_size':len(image),'image_sha256':audit.sha256(image),
+    'source':str(source),'root_vbmeta_source':str(root_source),
+    'image_matches_actual_root_vbmeta_init_boot_descriptor':True,
+    'expected_root_vbmeta_digest':desc['expected_digest'],
+    'device_write_performed':False,
+    'validation_scope':'Archive structure and exact image bytes; import and device write have not been tested.'
+}
+(folder/'manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding='utf-8')
+(folder/'LEIA-ME.txt').write_text('''PACOTE SOMENTE INIT_BOOT PARA MODO DOWNLOAD SAMSUNG
+Preparado em 13/10/2026 para o SM-S928B, build S928BXXU6ZZI4.
+
+INIT_BOOT_S928B_ZZI4_STOCK.tar contém uma única entrada: init_boot.img.
+O binário é exatamente a imagem original cujo hash corresponde ao descritor
+init_boot do vbmeta realmente lido do celular pelo usuário nesta conversa.
+SHA-256 da imagem:
+f61c74bab1781862e48f8abc4a8b7865f0ba661658a3807431395edc1ce069c8
+
+O TAR é um arquivo USTAR convencional. A estrutura e os bytes foram verificados
+localmente. Sua importação por Odin ou outro cliente Samsung Download e a gravação
+no aparelho ainda NÃO foram testadas. Esta preparação não grava nada no celular.
+
+Este arquivo é destinado a uma operação de firmware via modo Download Samsung,
+por exemplo como arquivo AP em um cliente compatível. Ele não é um rawprogram
+XML para EDL. O uso depende de confirmar primeiro que o aparelho entra no modo
+Download e é reconhecido pelo cliente Samsung apropriado.
+Não inclui imagens de vbmeta, GPT, EFS, userdata, bootloader ou modem.
+Depois de uma gravação, uma leitura independente de init_boot é a confirmação
+preferida: o conteúdo inteiro precisa corresponder ao SHA-256 acima.
+''',encoding='utf-8')
+read_after = audit.OUT.parent/'leitura-apos-write'
+read_after.mkdir(parents=True,exist_ok=True)
+print(json.dumps(manifest,ensure_ascii=False,indent=2))

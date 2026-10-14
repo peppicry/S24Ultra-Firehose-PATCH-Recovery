@@ -1,0 +1,90 @@
+"""Test one standard PATCH with identical existing/original header bytes.
+
+The only permitted patch is ANDROID! at init_boot start, 8 bytes on LUN0.
+No loader upload, erase, reset, GPT mutation, changed bytes or raw data send.
+"""
+import argparse
+import datetime
+import hashlib
+import json
+import xml.etree.ElementTree as ET
+
+from read_current_images import FirehoseReadTransport, OUT, WORKSPACE, parse_gpt
+from restore_init_boot_direct import STOCK_SHA256, ROOT_SHA256, IMAGE_SIZE, START, SECTORS
+
+PATCH = {'SECTOR_SIZE_IN_BYTES':'4096','byte_offset':'0','filename':'DISK',
+         'physical_partition_number':'0','size_in_bytes':'8',
+         'start_sector':str(START),'value':str(int.from_bytes(b'ANDROID!', 'little'))}
+PATCHED_SHA256 = 'f50885fc4354236e230d7d92d281300c903203fc91e6d67b5231c2568b2b11f4'
+
+class HeaderOnlyPatch(FirehoseReadTransport):
+    def send(self, tag, attrs):
+        if tag in ('nop', 'read'):
+            return super().send(tag, attrs)
+        if tag != 'patch' or attrs != PATCH:
+            raise RuntimeError('Only the fixed unchanged 8-byte init_boot header patch is permitted')
+        root=ET.Element('data'); ET.SubElement(root, tag, attrs)
+        data=b'<?xml version="1.0" encoding="UTF-8" ?>'+ET.tostring(root)
+        self.events.append({'direction':'tx','xml':data.decode()})
+        if self.connection.write(data) != len(data):
+            raise RuntimeError('Incomplete XML send')
+
+def main():
+    parser=argparse.ArgumentParser(); parser.add_argument('--port', required=True)
+    args=parser.parse_args()
+    result={'started_at':datetime.datetime.now().astimezone().isoformat(),
+            'port':args.port, 'operation':'identical_init_boot_header_patch_probe',
+            'original_restored':False, 'changed_original_bytes_written':0}
+    transport=None
+    try:
+        stock=(WORKSPACE/'outputs/s24-restaurar-init-boot/init_boot.img').read_bytes()
+        if len(stock)!=IMAGE_SIZE or hashlib.sha256(stock).hexdigest()!=STOCK_SHA256:
+            raise RuntimeError('Original image hash or size mismatch')
+        if stock[:8]!=b'ANDROID!':
+            raise RuntimeError('Original header is not the pinned unchanged patch value')
+        transport=HeaderOnlyPatch(args.port)
+        transport.confirm_firehose()
+        gpt=transport.read_sectors(0,5,'gpt_main0_pre_patch_probe.bin')
+        partitions=parse_gpt(gpt)
+        if partitions.get('init_boot')!={'start_sector':START,'end_sector':START+SECTORS-1,'sector_count':SECTORS}:
+            raise RuntimeError('init_boot GPT bounds mismatch')
+        if partitions.get('vbmeta')!={'start_sector':4244736,'end_sector':4244767,'sector_count':32}:
+            raise RuntimeError('vbmeta GPT bounds mismatch')
+        root=transport.read_sectors(4244736,32,'vbmeta_atual.bin')
+        if hashlib.sha256(root).hexdigest()!=ROOT_SHA256:
+            raise RuntimeError('Current vbmeta mismatch')
+        before=transport.read_sectors(START,SECTORS,'init_boot_pre_patch_probe.img')
+        result['before_sha256']=hashlib.sha256(before).hexdigest()
+        if before==stock:
+            result['status']='original_already_present_no_patch_needed'
+            result['original_restored']=True
+        else:
+            if result['before_sha256']!=PATCHED_SHA256 or before[:8]!=stock[:8]:
+                raise RuntimeError('Image is not the previously verified patched image or header differs')
+            transport.send('patch', PATCH)
+            response=transport.xml_response(timeout=10)
+            result['patch_response']=response
+            if response.get('rawmode') not in (None,'false'):
+                raise RuntimeError('Unexpected raw state; no further commands sent')
+            after=transport.read_sectors(START,SECTORS,'init_boot_pos_patch_probe.img')
+            result['after_sha256']=hashlib.sha256(after).hexdigest()
+            result['full_image_unchanged']=after==before
+            result['patch_acknowledged']=response.get('value')=='ACK'
+            if after!=before:
+                raise RuntimeError('Unexpected image change after identical header patch')
+            result['status']='identical_header_patch_acknowledged' if result['patch_acknowledged'] else 'identical_header_patch_rejected'
+            result['changed_data_write_permission_proven']=False
+    except Exception as error:
+        result['status']='stopped'; result['error_type']=type(error).__name__; result['error']=str(error)
+    finally:
+        if transport:
+            result['events']=transport.events; transport.close()
+        result['finished_at']=datetime.datetime.now().astimezone().isoformat()
+        (OUT/'init_boot_patch_probe_result.json').write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
+        compact={k:v for k,v in result.items() if k!='events'}
+        compact['last_events']=result.get('events',[])[-14:]
+        print(json.dumps(compact,ensure_ascii=False,indent=2))
+    return 1 if result['status']=='stopped' else 0
+
+if __name__=='__main__':
+    raise SystemExit(main())

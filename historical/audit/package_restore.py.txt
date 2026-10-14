@@ -1,0 +1,143 @@
+"""Prepare a one-partition rawprogram package using validated local evidence."""
+import hashlib
+import json
+import pathlib
+import struct
+import xml.etree.ElementTree as ET
+import zipfile
+import zlib
+import audit_init_boot as audit
+
+destination = audit.OUT.parent / 's24-restaurar-init-boot'
+source = audit.ROOT / 'init_boot (1).img'
+original = source.read_bytes()
+source_sha256 = audit.sha256(original)
+assert source_sha256 == 'f61c74bab1781862e48f8abc4a8b7865f0ba661658a3807431395edc1ce069c8'
+assert hashlib.sha1(original).hexdigest() == '4b2728be4bb1a9e880168e5914d0cb63443ed375'
+avb = audit.parse_avb(original)
+assert avb['vbmeta_hash_matches'] and avb['signature_valid_against_embedded_key']
+assert avb['flags'] == 0 and avb['descriptors'][0]['image_hash_matches']
+
+export_path = audit.ROOT / 'rawprogram0.xml'
+entries = [e for e in ET.parse(export_path).getroot() if e.tag == 'program' and e.get('label') == 'init_boot']
+assert len(entries) == 1
+export_entry = entries[0]
+attributes = dict(export_entry.attrib)
+sector_size = int(attributes['SECTOR_SIZE_IN_BYTES'])
+assert sector_size == 4096 and attributes['physical_partition_number'] == '0'
+assert attributes['file_sector_offset'] == '0' and attributes['sparse'] == 'false'
+
+# Validate both GPT header CRC and the complete entry array CRC.
+gpt = (audit.ROOT / 'gpt_main0_0').read_bytes()
+header_offset = sector_size
+assert gpt[header_offset:header_offset+8] == b'EFI PART'
+header_size, header_crc = struct.unpack_from('<II', gpt, header_offset+12)
+header = bytearray(gpt[header_offset:header_offset+header_size])
+struct.pack_into('<I', header, 16, 0)
+assert zlib.crc32(header) & 0xffffffff == header_crc
+entries_lba, entry_count, entry_size, entry_crc = struct.unpack_from('<QIII', gpt, header_offset+72)
+table = gpt[entries_lba*sector_size:entries_lba*sector_size+entry_count*entry_size]
+assert len(table) == entry_count*entry_size
+assert zlib.crc32(table) & 0xffffffff == entry_crc
+partitions = []
+for i in range(entry_count):
+    e = table[i*entry_size:(i+1)*entry_size]
+    if not any(e[:16]):
+        continue
+    first, last = struct.unpack_from('<QQ', e, 32)
+    name = e[56:128].decode('utf-16le').split('\0')[0]
+    partitions.append({'name': name, 'first': first, 'last': last})
+target = [p for p in partitions if p['name'] == 'init_boot']
+assert len(target) == 1
+target = target[0]
+first, last = target['first'], target['last']
+count = last-first+1
+assert first == int(attributes['start_sector']) == 188944
+assert last == 190991 and count == 2048
+assert len(original) == count*sector_size == 8388608
+assert int(attributes['start_byte_hex'], 16) == first*sector_size
+assert all(last < p['first'] or first > p['last'] for p in partitions if p['name'] != 'init_boot')
+
+attributes.update(filename='init_boot.img', num_partition_sectors=str(count),
+                  size_in_KB=str(len(original)//1024), start_byte_hex=hex(first*sector_size),
+                  start_sector=str(first))
+root = ET.Element('data')
+root.append(ET.Comment('Somente init_boot original. Endereco e tamanho confirmados na GPT lida do celular.'))
+ET.SubElement(root, 'program', attributes)
+ET.indent(root, space='  ')
+destination.mkdir(parents=True, exist_ok=True)
+(destination/'init_boot.img').write_bytes(original)
+xml_path = destination/'rawprogram_init_boot.xml'
+ET.ElementTree(root).write(xml_path, encoding='utf-8', xml_declaration=True)
+parsed = ET.parse(xml_path).getroot()
+assert len(parsed.findall('program')) == 1
+assert not parsed.findall('patch') and not parsed.findall('erase')
+entry = parsed.find('program')
+assert entry.get('label') == 'init_boot' and entry.get('filename') == 'init_boot.img'
+assert int(entry.get('num_partition_sectors'))*int(entry.get('SECTOR_SIZE_IN_BYTES')) == (destination/entry.get('filename')).stat().st_size
+assert audit.sha256((destination/'init_boot.img').read_bytes()) == source_sha256
+
+manifest = {
+    'image': 'init_boot.img', 'image_sha256': source_sha256, 'image_sha1': hashlib.sha1(original).hexdigest(),
+    'source_path': str(source), 'source_avb_content_hash_matches': True,
+    'source_avb_signature_valid_against_embedded_key': True,
+    'source_build_incremental': 'S928BXXU6ZZI4', 'xml': xml_path.name,
+    'xml_sha256': audit.sha256(xml_path.read_bytes()), 'sector_size': sector_size,
+    'physical_partition_number': 0, 'start_sector': first, 'last_sector_inclusive': last,
+    'num_partition_sectors': count, 'partition_size_bytes': len(original),
+    'gpt_header_crc_valid': True, 'gpt_entry_array_crc_valid': True,
+    'original_export_num_partition_sectors': int(export_entry.get('num_partition_sectors')),
+    'corrected_export_sector_count': True, 'partition_write_count': 1,
+    'device_write_performed': False,
+}
+(destination/'manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding='utf-8')
+(destination/'LEIA-ME.txt').write_text('''RESTAURO SOMENTE DO INIT_BOOT — SM-S928B
+Pacote preparado em 13/10/2026 a partir das leituras e arquivos locais do usuário.
+
+Arquivos necessários: rawprogram_init_boot.xml e init_boot.img.
+Mantenha ambos na mesma pasta. Se usar o ZIP, extraia-o antes de carregar o XML.
+Importe rawprogram_init_boot.xml na função RawProgram/XML do UnlockTool.
+Antes de iniciar a gravação, confira que a lista apresenta apenas init_boot,
+na unidade física/LUN 0, início 188944, setor de 4096 bytes, total 2048 setores.
+A imagem é a referência original usada como base do patch KernelSU encontrado,
+identificada pelo SHA-1 stock_image.sha1 e pela correspondência dos metadados AVB.
+Build registrada: S928BXXU6ZZI4. Tamanho: 8.388.608 bytes.
+
+O XML possui uma única operação program, cobrindo somente init_boot.
+Não contém comandos patch ou erase, nem imagens de GPT, EFS, userdata ou vbmeta.
+O export rawprogram0.xml indicava 2047 setores. O tamanho foi corrigido para
+2048 após validar a GPT (inclusive seus dois CRCs): início 188944 e fim 190991.
+O último setor precisa ser incluído para gravar o rodapé AVB da imagem original.
+
+Este pacote foi preparado e verificado localmente. Nenhuma gravação no celular
+foi executada nesta conversa. O suporte/importação pelo UnlockTool não foi
+testado na interface do aplicativo. Preserve as leituras originais como backup.
+Se a gravação for concluída, uma nova leitura de init_boot deve ter SHA-256:
+f61c74bab1781862e48f8abc4a8b7865f0ba661658a3807431395edc1ce069c8
+Isso confirma que o arquivo original foi integralmente escrito e lido de volta.
+
+VERIFICAÇÕES DAS OUTRAS LEITURAS
+boot_0: hash AVB do conteúdo confere; assinatura incorporada válida.
+recovery_0: hash AVB do conteúdo confere; assinatura incorporada válida.
+vendor_boot_0: hash AVB do conteúdo confere; assinatura incorporada válida.
+Nos três casos, a chave é igual à chave incorporada na referência init_boot.
+vbmeta_system_0: hash e assinatura dos metadados conferem, flags=0.
+As partições de sistema descritas por vbmeta_system não foram verificadas.
+pvmfw_0 e vm-bootsys_0: integridade não estabelecida por este teste AVB.
+As demais partições não receberam uma verificação completa nesta análise.
+Uma assinatura válida contra a chave incorporada não equivale, sozinha, a uma
+autenticação independente da chave da fabricante. Também não garante que o
+celular iniciará: outras causas ou alterações fora do escopo podem existir.
+''',encoding='utf-8')
+archive = destination.parent / 'S24_Ultra_restaurar_somente_init_boot.zip'
+filenames = ['rawprogram_init_boot.xml', 'init_boot.img', 'manifest.json', 'LEIA-ME.txt']
+with zipfile.ZipFile(archive,'w',compression=zipfile.ZIP_DEFLATED) as z:
+    for filename in filenames:
+        z.write(destination/filename, filename)
+with zipfile.ZipFile(archive) as z:
+    assert z.testzip() is None
+    assert sorted(z.namelist()) == sorted(filenames)
+    assert audit.sha256(z.read('init_boot.img')) == source_sha256
+print(json.dumps({'folder': str(destination), 'zip': str(archive), 'zip_size': archive.stat().st_size,
+                  'xml': str(xml_path), 'image': str(destination/'init_boot.img'),
+                  'validation': 'passed', 'manifest': manifest}, ensure_ascii=False))

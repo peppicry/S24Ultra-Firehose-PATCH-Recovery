@@ -1,0 +1,46 @@
+"""Compare the read-back image with the local AVB-consistent reference."""
+import hashlib
+import json
+import re
+import struct
+import audit_init_boot as audit
+
+def unpack(data):
+    size = struct.unpack_from('<I', data, 12)[0]
+    return audit.parse_cpio(audit.decompress(data[4096:4096+size])[0])[1]
+
+current_path = audit.ROOT / 'init_boot_0'
+reference_path = audit.ROOT / 'init_boot (1).img'
+current = current_path.read_bytes()
+reference = reference_path.read_bytes()
+new_files, old_files = unpack(current), unpack(reference)
+current_avb, reference_avb = audit.parse_avb(current), audit.parse_avb(reference)
+cf, rf = current_avb['footer'], reference_avb['footer']
+recorded_sha1 = new_files['stock_image.sha1'].decode('ascii')
+reference_sha1 = hashlib.sha1(reference).hexdigest()
+modinfo = [x.decode('ascii') for x in re.findall(rb'[ -~]{4,}', new_files['kernelsu.ko'])
+           if re.match(rb'^(vermagic|description|author|license|version|srcversion|name|depends)=', x)]
+diff = {
+    'current_path': str(current_path), 'reference_path': str(reference_path),
+    'added_files': sorted(new_files.keys()-old_files.keys()),
+    'removed_files': sorted(old_files.keys()-new_files.keys()),
+    'changed_files': [{'path': n, 'old_size': len(old_files[n]), 'new_size': len(new_files[n]),
+                       'old_sha256': audit.sha256(old_files[n]), 'new_sha256': audit.sha256(new_files[n])}
+                      for n in sorted(new_files.keys()&old_files.keys()) if new_files[n] != old_files[n]],
+    'original_init_preserved_as_init_real': new_files['init.real'] == old_files['init'],
+    'recorded_stock_image_sha1': recorded_sha1, 'reference_sha1': reference_sha1,
+    'recorded_stock_sha1_matches_reference': recorded_sha1 == reference_sha1,
+    'signed_vbmeta_blob_identical': current[cf['vbmeta_offset']:cf['vbmeta_offset']+cf['vbmeta_size']]
+                                  == reference[rf['vbmeta_offset']:rf['vbmeta_offset']+rf['vbmeta_size']],
+    'ksu_config': new_files['ksu_config'].decode('ascii'), 'module_modinfo': modinfo,
+    'vbmeta_system_metadata': audit.parse_avb((audit.ROOT/'vbmeta_system_0').read_bytes()),
+}
+assert diff['original_init_preserved_as_init_real']
+assert diff['recorded_stock_sha1_matches_reference']
+assert diff['signed_vbmeta_blob_identical']
+assert not current_avb['descriptors'][0]['image_hash_matches']
+assert reference_avb['descriptors'][0]['image_hash_matches']
+assert current_avb['signature_valid_against_embedded_key']
+assert reference_avb['signature_valid_against_embedded_key']
+(audit.OUT/'comparison.json').write_text(json.dumps(diff, ensure_ascii=False, indent=2), encoding='utf-8')
+print(json.dumps({k:v for k,v in diff.items() if k != 'vbmeta_system_metadata'}, ensure_ascii=False))

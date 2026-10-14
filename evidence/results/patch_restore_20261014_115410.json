@@ -1,0 +1,374 @@
+{
+  "started_at": "2026-10-14T11:54:10.044525+02:00",
+  "port": "COM1",
+  "operation": "restore_original_init_boot_using_patch",
+  "command_limit": 64,
+  "full_restoration_confirmed": false,
+  "confirmed_patch_commands": 64,
+  "verified_sectors": 1,
+  "before_sha256": "9d4e7d3468d85994123b521139a15740f629921138abcb33aac6e23c26ca9ca5",
+  "original_sha256": "f61c74bab1781862e48f8abc4a8b7865f0ba661658a3807431395edc1ce069c8",
+  "remaining_original_words": 277634,
+  "offline_plan_yields_exact_original": true,
+  "readback_sha256": "16012cc9fca0cdac21b40233d385071ab1d6a0649cc81480f73e86c3b9ac9e41",
+  "readback_matches_planned_state": true,
+  "status": "bounded_partial_restore_verified",
+  "restored_file": "<WORKSPACE>\\outputs\\s24-edl-diagnostico\\init_boot_pos_patch_restore_20261014_115410.img",
+  "patch_command_seconds": 0.094,
+  "protocol_idle_on_close": true,
+  "log_counts": {
+    "INFO: Calling handler for nop": 1,
+    "INFO: Binary build date: Jun 10 2026 @ 14:28:02 ": 1,
+    "INFO: Chip serial num (0x0) Chip ID (0x0)": 1,
+    "INFO: Supported Functions (15):": 1,
+    "INFO: program": 1,
+    "INFO: read": 1,
+    "INFO: nop": 1,
+    "INFO: patch": 1,
+    "INFO: configure": 1,
+    "INFO: setbootablestoragedrive": 1,
+    "INFO: erase": 1,
+    "INFO: power": 1,
+    "INFO: firmwarewrite": 1,
+    "INFO: getstorageinfo": 1,
+    "INFO: benchmark": 1,
+    "INFO: emmc": 1,
+    "INFO: ufs": 1,
+    "INFO: fixgpt": 1,
+    "INFO: getsha256digest": 1,
+    "INFO: End of supported functions 15": 1,
+    "INFO: Calling handler for read": 5,
+    "DEBUG: Can't decode attribute slot with value ": 69,
+    "DEBUG: Can't decode attribute last_sector with value ": 5,
+    "DEBUG: Can't decode attribute skip_bad_block with value ": 5,
+    "DEBUG: Can't decode attribute get_spare with value ": 5,
+    "DEBUG: Can't decode attribute ecc_disabled with value ": 5,
+    "INFO: Calling handler for patch": 64,
+    "DEBUG: patch command is deprecated.": 64
+  },
+  "last_events": [
+    {
+      "direction": "tx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><data><patch SECTOR_SIZE_IN_BYTES=\"4096\" byte_offset=\"488\" filename=\"DISK\" physical_partition_number=\"0\" size_in_bytes=\"8\" start_sector=\"188945\" value=\"3275362029201924207\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: Calling handler for patch\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: patch command is deprecated.\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute slot with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<response value=\"ACK\" rawmode=\"false\" /></data>"
+    },
+    {
+      "direction": "tx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><data><patch SECTOR_SIZE_IN_BYTES=\"4096\" byte_offset=\"496\" filename=\"DISK\" physical_partition_number=\"0\" size_in_bytes=\"8\" start_sector=\"188945\" value=\"2522297444144803433\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: Calling handler for patch\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: patch command is deprecated.\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute slot with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<response value=\"ACK\" rawmode=\"false\" /></data>"
+    },
+    {
+      "direction": "tx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><data><patch SECTOR_SIZE_IN_BYTES=\"4096\" byte_offset=\"504\" filename=\"DISK\" physical_partition_number=\"0\" size_in_bytes=\"8\" start_sector=\"188945\" value=\"7309465793296822272\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: Calling handler for patch\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: patch command is deprecated.\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute slot with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<response value=\"ACK\" rawmode=\"false\" /></data>"
+    },
+    {
+      "direction": "tx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><data><patch SECTOR_SIZE_IN_BYTES=\"4096\" byte_offset=\"512\" filename=\"DISK\" physical_partition_number=\"0\" size_in_bytes=\"8\" start_sector=\"188945\" value=\"7956018043274933860\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: Calling handler for patch\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: patch command is deprecated.\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute slot with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<response value=\"ACK\" rawmode=\"false\" /></data>"
+    },
+    {
+      "direction": "tx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><data><patch SECTOR_SIZE_IN_BYTES=\"4096\" byte_offset=\"520\" filename=\"DISK\" physical_partition_number=\"0\" size_in_bytes=\"8\" start_sector=\"188945\" value=\"4710576409075589223\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: Calling handler for patch\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: patch command is deprecated.\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute slot with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<response value=\"ACK\" rawmode=\"false\" /></data>"
+    },
+    {
+      "direction": "tx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><data><patch SECTOR_SIZE_IN_BYTES=\"4096\" byte_offset=\"528\" filename=\"DISK\" physical_partition_number=\"0\" size_in_bytes=\"8\" start_sector=\"188945\" value=\"5283657245591028310\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: Calling handler for patch\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: patch command is deprecated.\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute slot with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<response value=\"ACK\" rawmode=\"false\" /></data>"
+    },
+    {
+      "direction": "tx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><data><patch SECTOR_SIZE_IN_BYTES=\"4096\" byte_offset=\"536\" filename=\"DISK\" physical_partition_number=\"0\" size_in_bytes=\"8\" start_sector=\"188945\" value=\"2338616625422421583\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: Calling handler for patch\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: patch command is deprecated.\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute slot with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<response value=\"ACK\" rawmode=\"false\" /></data>"
+    },
+    {
+      "direction": "tx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><data><patch SECTOR_SIZE_IN_BYTES=\"4096\" byte_offset=\"544\" filename=\"DISK\" physical_partition_number=\"0\" size_in_bytes=\"8\" start_sector=\"188945\" value=\"8534149106247954025\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: Calling handler for patch\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: patch command is deprecated.\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute slot with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<response value=\"ACK\" rawmode=\"false\" /></data>"
+    },
+    {
+      "direction": "tx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><data><patch SECTOR_SIZE_IN_BYTES=\"4096\" byte_offset=\"552\" filename=\"DISK\" physical_partition_number=\"0\" size_in_bytes=\"8\" start_sector=\"188945\" value=\"7306087009988735589\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: Calling handler for patch\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: patch command is deprecated.\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute slot with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<response value=\"ACK\" rawmode=\"false\" /></data>"
+    },
+    {
+      "direction": "tx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><data><patch SECTOR_SIZE_IN_BYTES=\"4096\" byte_offset=\"560\" filename=\"DISK\" physical_partition_number=\"0\" size_in_bytes=\"8\" start_sector=\"188945\" value=\"8315461783946133545\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: Calling handler for patch\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: patch command is deprecated.\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute slot with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<response value=\"ACK\" rawmode=\"false\" /></data>"
+    },
+    {
+      "direction": "tx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><data><patch SECTOR_SIZE_IN_BYTES=\"4096\" byte_offset=\"568\" filename=\"DISK\" physical_partition_number=\"0\" size_in_bytes=\"8\" start_sector=\"188945\" value=\"8387223540652401408\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: Calling handler for patch\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: patch command is deprecated.\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute slot with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<response value=\"ACK\" rawmode=\"false\" /></data>"
+    },
+    {
+      "direction": "tx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><data><patch SECTOR_SIZE_IN_BYTES=\"4096\" byte_offset=\"576\" filename=\"DISK\" physical_partition_number=\"0\" size_in_bytes=\"8\" start_sector=\"188945\" value=\"2317427890795475039\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: Calling handler for patch\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: patch command is deprecated.\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute slot with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<response value=\"ACK\" rawmode=\"false\" /></data>"
+    },
+    {
+      "direction": "tx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><data><read SECTOR_SIZE_IN_BYTES=\"4096\" num_partition_sectors=\"1\" physical_partition_number=\"0\" start_sector=\"188945\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: Calling handler for read\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute slot with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute last_sector with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute skip_bad_block with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute get_spare with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute ecc_disabled with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<response value=\"ACK\" rawmode=\"true\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<response value=\"ACK\" rawmode=\"false\" /></data>"
+    },
+    {
+      "read_saved": "<WORKSPACE>\\outputs\\s24-edl-diagnostico\\init_boot_patch_sector_latest.img",
+      "bytes": 4096,
+      "sha256": "40d342a25daa2c136666d57fda38b75a713789e4f37a92dd6acedb7c6fb86e3e"
+    },
+    {
+      "direction": "tx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><data><read SECTOR_SIZE_IN_BYTES=\"4096\" num_partition_sectors=\"2048\" physical_partition_number=\"0\" start_sector=\"188944\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: Calling handler for read\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute slot with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute last_sector with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute skip_bad_block with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute get_spare with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute ecc_disabled with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<response value=\"ACK\" rawmode=\"true\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<response value=\"ACK\" rawmode=\"false\" /></data>"
+    },
+    {
+      "read_saved": "<WORKSPACE>\\outputs\\s24-edl-diagnostico\\init_boot_pos_patch_restore_20261014_115410.img",
+      "bytes": 8388608,
+      "sha256": "16012cc9fca0cdac21b40233d385071ab1d6a0649cc81480f73e86c3b9ac9e41"
+    }
+  ],
+  "finished_at": "2026-10-14T11:54:11.384039+02:00"
+}

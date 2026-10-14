@@ -1,0 +1,689 @@
+[
+  {
+    "path": "<DOWNLOADS>\\init_boot_0",
+    "size": 8388608,
+    "sha256": "f50885fc4354236e230d7d92d281300c903203fc91e6d67b5231c2568b2b11f4",
+    "avb": {
+      "footer": {
+        "version": "1.0",
+        "original_image_size": 2228224,
+        "vbmeta_offset": 2228224,
+        "vbmeta_size": 2112,
+        "reserved_zero": true
+      },
+      "algorithm_type": 2,
+      "algorithm": "SHA256_RSA4096",
+      "flags": 0,
+      "rollback_index": 0,
+      "rollback_index_location": 0,
+      "release_string": "avbtool 1.2.0",
+      "public_key_sha256": "15f66990b32b613508fa9979a5fc70aa37cb3c3d6043e82a998765716d6f5abd",
+      "descriptors": [
+        {
+          "tag": 2,
+          "size": 208,
+          "partition": "init_boot",
+          "image_size": 1724928,
+          "hash_algorithm": "sha256",
+          "salt": "d7282f8f62d3c7fbc5a98842158e86e177017a5d7bb4309e3f4eed01ee634162",
+          "expected_digest": "8eae2f7ac061f2e012b494fa0bf51c5827bb127572210f737b97ba328a1f3571",
+          "flags": 0,
+          "calculated_digest": "ee8badac71af5afe1753a79f513e4fb18a52fe2b99e7ba718b42ad6b3cd2fb85",
+          "image_hash_matches": false
+        }
+      ],
+      "vbmeta_hash_matches": true,
+      "signature_valid_against_embedded_key": true
+    },
+    "boot": {
+      "header_version": 4,
+      "header_size": 1584,
+      "kernel_size": 0,
+      "ramdisk_size": 2218924,
+      "ramdisk_offset": 4096,
+      "boot_signature_size": 0,
+      "os_version": "14.0.0",
+      "patch_month": "2026-08",
+      "cmdline": ""
+    },
+    "ramdisk": {
+      "compression": "lz4-legacy",
+      "uncompressed_size": 4291428,
+      "cpio_sha256": "c6dd9679c2076c6b473e8a1809a7d7c335277d9c39b42b6cd4314137036a17cd",
+      "file_count": 16,
+      "archive_end": 4291428,
+      "trailing_nonzero_bytes": 0
+    },
+    "marker_hits": {
+      "kernelsu": [
+        "init",
+        "kernelsu.ko"
+      ],
+      "ksud": [
+        "kernelsu.ko"
+      ]
+    },
+    "files": [
+      {
+        "path": "debug_ramdisk",
+        "mode_octal": "0o40755",
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "uid": 0,
+        "gid": 0,
+        "mtime": 0
+      },
+      {
+        "path": "dev",
+        "mode_octal": "0o40755",
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "uid": 0,
+        "gid": 0,
+        "mtime": 0
+      },
+      {
+        "path": "init",
+        "mode_octal": "0o100755",
+        "size": 606912,
+        "sha256": "9e44e4b9c37934530b36ebb0349ca474f9249689eaaf00f0465df0486d225f8e",
+        "uid": 0,
+        "gid": 0,
+        "mtime": 0
+      },
+      {
+        "path": "init.real",
+        "mode_octal": "0o100750",
+        "size": 3247392,
+        "sha256": "4d722b201f01712680387aee4f43ce3767bb8b1eb6293fe7c1da977e5d938645",
+        "uid": 0,
+        "gid": 0,
+        "mtime": 0
+      },
+      {
+        "path": "kernelsu.ko",
+        "mode_octal": "0o100755",
+        "size": 434048,
+        "sha256": "0d6f528552f520644c55626ba714a6b0ce2c6e83f501860b3fcd739823bd80c0",
+        "uid": 0,
+        "gid": 0,
+        "mtime": 0
+      },
+      {
+        "path": "ksu_config",
+        "mode_octal": "0o100644",
+        "size": 9,
+        "sha256": "3913cc1c239710f16c657735efa541a45f247d9c9cd60c3cbb3e6c6754e735c5",
+        "uid": 0,
+        "gid": 0,
+        "mtime": 0
+      },
+      {
+        "path": "metadata",
+        "mode_octal": "0o40755",
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "uid": 0,
+        "gid": 0,
+        "mtime": 0
+      },
+      {
+        "path": "mnt",
+        "mode_octal": "0o40755",
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "uid": 0,
+        "gid": 0,
+        "mtime": 0
+      },
+      {
+        "path": "proc",
+        "mode_octal": "0o40755",
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "uid": 0,
+        "gid": 0,
+        "mtime": 0
+      },
+      {
+        "path": "second_stage_resources",
+        "mode_octal": "0o40755",
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "uid": 0,
+        "gid": 0,
+        "mtime": 0
+      },
+      {
+        "path": "stock_image.sha1",
+        "mode_octal": "0o100755",
+        "size": 40,
+        "sha256": "3ee391f972ae62392b3513a89f8253ada77b4f24bf5666dfdcfc97ace02016d9",
+        "uid": 0,
+        "gid": 0,
+        "mtime": 0
+      },
+      {
+        "path": "sys",
+        "mode_octal": "0o40755",
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "uid": 0,
+        "gid": 0,
+        "mtime": 0
+      },
+      {
+        "path": "system",
+        "mode_octal": "0o40755",
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "uid": 0,
+        "gid": 0,
+        "mtime": 0
+      },
+      {
+        "path": "system/etc",
+        "mode_octal": "0o40755",
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "uid": 0,
+        "gid": 0,
+        "mtime": 0
+      },
+      {
+        "path": "system/etc/ramdisk",
+        "mode_octal": "0o40755",
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "uid": 0,
+        "gid": 0,
+        "mtime": 0
+      },
+      {
+        "path": "system/etc/ramdisk/build.prop",
+        "mode_octal": "0o100644",
+        "size": 925,
+        "sha256": "e2dccea93759924909afbae732617a53bad8e66516964589afabce0c2573d90f",
+        "uid": 0,
+        "gid": 0,
+        "mtime": 0
+      }
+    ],
+    "text_files": {
+      "ksu_config": "bundled=1",
+      "system/etc/ramdisk/build.prop": "####################################\n# from generate-common-build-props\n# These properties identify this partition image.\n####################################\nro.product.bootimage.brand=samsung\nro.product.bootimage.device=e3q\nro.product.bootimage.manufacturer=samsung\nro.product.bootimage.model=SM-S928B\nro.product.bootimage.name=e3qxxx\nro.product.name_for_attestation=\nro.product.model_for_attestation=\nro.product.brand_for_attestation=\nro.bootimage.build.date=Fri Sep  4 08:54:00 KST 2026\nro.bootimage.build.date.utc=1788479640\nro.bootimage.build.fingerprint=samsung/e3qxxx/e3q:14/UP1A.231005.007/S928BXXU6ZZI4:user/release-keys\nro.bootimage.build.id=UP1A.231005.007\nro.bootimage.build.tags=release-keys\nro.bootimage.build.type=user\nro.bootimage.build.version.incremental=S928BXXU6ZZI4\nro.bootimage.build.version.release=14\nro.bootimage.build.version.release_or_codename=14\nro.bootimage.build.version.sdk=34\n# end of file\n\n"
+    }
+  },
+  {
+    "path": "<DOWNLOADS>\\init_boot.img",
+    "size": 8388608,
+    "sha256": "f50885fc4354236e230d7d92d281300c903203fc91e6d67b5231c2568b2b11f4",
+    "avb": {
+      "footer": {
+        "version": "1.0",
+        "original_image_size": 2228224,
+        "vbmeta_offset": 2228224,
+        "vbmeta_size": 2112,
+        "reserved_zero": true
+      },
+      "algorithm_type": 2,
+      "algorithm": "SHA256_RSA4096",
+      "flags": 0,
+      "rollback_index": 0,
+      "rollback_index_location": 0,
+      "release_string": "avbtool 1.2.0",
+      "public_key_sha256": "15f66990b32b613508fa9979a5fc70aa37cb3c3d6043e82a998765716d6f5abd",
+      "descriptors": [
+        {
+          "tag": 2,
+          "size": 208,
+          "partition": "init_boot",
+          "image_size": 1724928,
+          "hash_algorithm": "sha256",
+          "salt": "d7282f8f62d3c7fbc5a98842158e86e177017a5d7bb4309e3f4eed01ee634162",
+          "expected_digest": "8eae2f7ac061f2e012b494fa0bf51c5827bb127572210f737b97ba328a1f3571",
+          "flags": 0,
+          "calculated_digest": "ee8badac71af5afe1753a79f513e4fb18a52fe2b99e7ba718b42ad6b3cd2fb85",
+          "image_hash_matches": false
+        }
+      ],
+      "vbmeta_hash_matches": true,
+      "signature_valid_against_embedded_key": true
+    },
+    "boot": {
+      "header_version": 4,
+      "header_size": 1584,
+      "kernel_size": 0,
+      "ramdisk_size": 2218924,
+      "ramdisk_offset": 4096,
+      "boot_signature_size": 0,
+      "os_version": "14.0.0",
+      "patch_month": "2026-08",
+      "cmdline": ""
+    },
+    "ramdisk": {
+      "compression": "lz4-legacy",
+      "uncompressed_size": 4291428,
+      "cpio_sha256": "c6dd9679c2076c6b473e8a1809a7d7c335277d9c39b42b6cd4314137036a17cd",
+      "file_count": 16,
+      "archive_end": 4291428,
+      "trailing_nonzero_bytes": 0
+    },
+    "marker_hits": {
+      "kernelsu": [
+        "init",
+        "kernelsu.ko"
+      ],
+      "ksud": [
+        "kernelsu.ko"
+      ]
+    }
+  },
+  {
+    "path": "<DOWNLOADS>\\init_boot (1).img",
+    "size": 8388608,
+    "sha256": "f61c74bab1781862e48f8abc4a8b7865f0ba661658a3807431395edc1ce069c8",
+    "avb": {
+      "footer": {
+        "version": "1.0",
+        "original_image_size": 1724928,
+        "vbmeta_offset": 1728512,
+        "vbmeta_size": 2112,
+        "reserved_zero": true
+      },
+      "algorithm_type": 2,
+      "algorithm": "SHA256_RSA4096",
+      "flags": 0,
+      "rollback_index": 0,
+      "rollback_index_location": 0,
+      "release_string": "avbtool 1.2.0",
+      "public_key_sha256": "15f66990b32b613508fa9979a5fc70aa37cb3c3d6043e82a998765716d6f5abd",
+      "descriptors": [
+        {
+          "tag": 2,
+          "size": 208,
+          "partition": "init_boot",
+          "image_size": 1724928,
+          "hash_algorithm": "sha256",
+          "salt": "d7282f8f62d3c7fbc5a98842158e86e177017a5d7bb4309e3f4eed01ee634162",
+          "expected_digest": "8eae2f7ac061f2e012b494fa0bf51c5827bb127572210f737b97ba328a1f3571",
+          "flags": 0,
+          "calculated_digest": "8eae2f7ac061f2e012b494fa0bf51c5827bb127572210f737b97ba328a1f3571",
+          "image_hash_matches": true
+        }
+      ],
+      "vbmeta_hash_matches": true,
+      "signature_valid_against_embedded_key": true
+    },
+    "boot": {
+      "header_version": 4,
+      "header_size": 1584,
+      "kernel_size": 0,
+      "ramdisk_size": 1716829,
+      "ramdisk_offset": 4096,
+      "boot_signature_size": 0,
+      "os_version": "14.0.0",
+      "patch_month": "2026-08",
+      "cmdline": ""
+    },
+    "ramdisk": {
+      "compression": "lz4-legacy",
+      "uncompressed_size": 3249920,
+      "cpio_sha256": "1e6a6969dc2eda4f91c87cbb6826eb039cd02c3562579340f7ea0ca2d96fbf44",
+      "file_count": 12,
+      "archive_end": 3249920,
+      "trailing_nonzero_bytes": 0
+    },
+    "marker_hits": {}
+  },
+  {
+    "path": "<DOWNLOADS>\\init_boot_beta_android17.img",
+    "size": 8388608,
+    "sha256": "d48469e0937636843d0c5533dcaa850f4213cbdb3d07998320b3a899b8391e7f",
+    "avb": {
+      "footer": {
+        "version": "1.0",
+        "original_image_size": 1724928,
+        "vbmeta_offset": 1728512,
+        "vbmeta_size": 2112,
+        "reserved_zero": true
+      },
+      "algorithm_type": 2,
+      "algorithm": "SHA256_RSA4096",
+      "flags": 0,
+      "rollback_index": 0,
+      "rollback_index_location": 0,
+      "release_string": "avbtool 1.2.0",
+      "public_key_sha256": "15f66990b32b613508fa9979a5fc70aa37cb3c3d6043e82a998765716d6f5abd",
+      "descriptors": [
+        {
+          "tag": 2,
+          "size": 208,
+          "partition": "init_boot",
+          "image_size": 1724928,
+          "hash_algorithm": "sha256",
+          "salt": "720a0af9eeec639671857844e7aa88f137bf1f780fe2e6245c884b141ce10019",
+          "expected_digest": "17371fe9af69b0f441780e8e16ce0cf524c0abb44bd4dcb083562dad2753e215",
+          "flags": 0,
+          "calculated_digest": "17371fe9af69b0f441780e8e16ce0cf524c0abb44bd4dcb083562dad2753e215",
+          "image_hash_matches": true
+        }
+      ],
+      "vbmeta_hash_matches": true,
+      "signature_valid_against_embedded_key": true
+    },
+    "boot": {
+      "header_version": 4,
+      "header_size": 1584,
+      "kernel_size": 0,
+      "ramdisk_size": 1716830,
+      "ramdisk_offset": 4096,
+      "boot_signature_size": 0,
+      "os_version": "14.0.0",
+      "patch_month": "2026-08",
+      "cmdline": ""
+    },
+    "ramdisk": {
+      "compression": "lz4-legacy",
+      "uncompressed_size": 3249920,
+      "cpio_sha256": "93a4407aa4ef68a0ea45aae678f98aac8f1565dd804722956104174e0706318d",
+      "file_count": 12,
+      "archive_end": 3249920,
+      "trailing_nonzero_bytes": 0
+    },
+    "marker_hits": {}
+  },
+  {
+    "path": "<DOWNLOADS>\\init_teste_boot.img",
+    "size": 8388608,
+    "sha256": "5da2238992916c3f6a14c3149324a64963af4ec8c26e8bb41569c4e7e52050c4",
+    "avb": {
+      "footer": {
+        "version": "1.0",
+        "original_image_size": 1724928,
+        "vbmeta_offset": 1728512,
+        "vbmeta_size": 2112,
+        "reserved_zero": true
+      },
+      "algorithm_type": 2,
+      "algorithm": "SHA256_RSA4096",
+      "flags": 0,
+      "rollback_index": 0,
+      "rollback_index_location": 0,
+      "release_string": "avbtool 1.2.0",
+      "public_key_sha256": "15f66990b32b613508fa9979a5fc70aa37cb3c3d6043e82a998765716d6f5abd",
+      "descriptors": [
+        {
+          "tag": 2,
+          "size": 208,
+          "partition": "init_boot",
+          "image_size": 1724928,
+          "hash_algorithm": "sha256",
+          "salt": "7a40618b0bb6ea88f2d5624959fd73ed4aea2e14dd40c50803beea7c2966da6a",
+          "expected_digest": "c6a2cda42f59df1de7b9abc4b9d4ea09c3e07546ddda467cd502402d568f897b",
+          "flags": 0,
+          "calculated_digest": "c6a2cda42f59df1de7b9abc4b9d4ea09c3e07546ddda467cd502402d568f897b",
+          "image_hash_matches": true
+        }
+      ],
+      "vbmeta_hash_matches": true,
+      "signature_valid_against_embedded_key": true
+    },
+    "boot": {
+      "header_version": 4,
+      "header_size": 1584,
+      "kernel_size": 0,
+      "ramdisk_size": 1716830,
+      "ramdisk_offset": 4096,
+      "boot_signature_size": 0,
+      "os_version": "14.0.0",
+      "patch_month": "2026-06",
+      "cmdline": ""
+    },
+    "ramdisk": {
+      "compression": "lz4-legacy",
+      "uncompressed_size": 3249920,
+      "cpio_sha256": "cb15d5a1e2ae1ce95ec30d3938cbdbe02e7784223f7da6b3cb0c1b788edfa83d",
+      "file_count": 12,
+      "archive_end": 3249920,
+      "trailing_nonzero_bytes": 0
+    },
+    "marker_hits": {}
+  },
+  {
+    "path": "<DOWNLOADS>\\initboot-stock-tar\\init_boot.img",
+    "size": 8388608,
+    "sha256": "f61c74bab1781862e48f8abc4a8b7865f0ba661658a3807431395edc1ce069c8",
+    "avb": {
+      "footer": {
+        "version": "1.0",
+        "original_image_size": 1724928,
+        "vbmeta_offset": 1728512,
+        "vbmeta_size": 2112,
+        "reserved_zero": true
+      },
+      "algorithm_type": 2,
+      "algorithm": "SHA256_RSA4096",
+      "flags": 0,
+      "rollback_index": 0,
+      "rollback_index_location": 0,
+      "release_string": "avbtool 1.2.0",
+      "public_key_sha256": "15f66990b32b613508fa9979a5fc70aa37cb3c3d6043e82a998765716d6f5abd",
+      "descriptors": [
+        {
+          "tag": 2,
+          "size": 208,
+          "partition": "init_boot",
+          "image_size": 1724928,
+          "hash_algorithm": "sha256",
+          "salt": "d7282f8f62d3c7fbc5a98842158e86e177017a5d7bb4309e3f4eed01ee634162",
+          "expected_digest": "8eae2f7ac061f2e012b494fa0bf51c5827bb127572210f737b97ba328a1f3571",
+          "flags": 0,
+          "calculated_digest": "8eae2f7ac061f2e012b494fa0bf51c5827bb127572210f737b97ba328a1f3571",
+          "image_hash_matches": true
+        }
+      ],
+      "vbmeta_hash_matches": true,
+      "signature_valid_against_embedded_key": true
+    },
+    "boot": {
+      "header_version": 4,
+      "header_size": 1584,
+      "kernel_size": 0,
+      "ramdisk_size": 1716829,
+      "ramdisk_offset": 4096,
+      "boot_signature_size": 0,
+      "os_version": "14.0.0",
+      "patch_month": "2026-08",
+      "cmdline": ""
+    },
+    "ramdisk": {
+      "compression": "lz4-legacy",
+      "uncompressed_size": 3249920,
+      "cpio_sha256": "1e6a6969dc2eda4f91c87cbb6826eb039cd02c3562579340f7ea0ca2d96fbf44",
+      "file_count": 12,
+      "archive_end": 3249920,
+      "trailing_nonzero_bytes": 0
+    },
+    "marker_hits": {}
+  },
+  {
+    "path": "<DOWNLOADS>\\initboot-stock-tar\\unpacked\\init_boot.img",
+    "size": 8388608,
+    "sha256": "f61c74bab1781862e48f8abc4a8b7865f0ba661658a3807431395edc1ce069c8",
+    "avb": {
+      "footer": {
+        "version": "1.0",
+        "original_image_size": 1724928,
+        "vbmeta_offset": 1728512,
+        "vbmeta_size": 2112,
+        "reserved_zero": true
+      },
+      "algorithm_type": 2,
+      "algorithm": "SHA256_RSA4096",
+      "flags": 0,
+      "rollback_index": 0,
+      "rollback_index_location": 0,
+      "release_string": "avbtool 1.2.0",
+      "public_key_sha256": "15f66990b32b613508fa9979a5fc70aa37cb3c3d6043e82a998765716d6f5abd",
+      "descriptors": [
+        {
+          "tag": 2,
+          "size": 208,
+          "partition": "init_boot",
+          "image_size": 1724928,
+          "hash_algorithm": "sha256",
+          "salt": "d7282f8f62d3c7fbc5a98842158e86e177017a5d7bb4309e3f4eed01ee634162",
+          "expected_digest": "8eae2f7ac061f2e012b494fa0bf51c5827bb127572210f737b97ba328a1f3571",
+          "flags": 0,
+          "calculated_digest": "8eae2f7ac061f2e012b494fa0bf51c5827bb127572210f737b97ba328a1f3571",
+          "image_hash_matches": true
+        }
+      ],
+      "vbmeta_hash_matches": true,
+      "signature_valid_against_embedded_key": true
+    },
+    "boot": {
+      "header_version": 4,
+      "header_size": 1584,
+      "kernel_size": 0,
+      "ramdisk_size": 1716829,
+      "ramdisk_offset": 4096,
+      "boot_signature_size": 0,
+      "os_version": "14.0.0",
+      "patch_month": "2026-08",
+      "cmdline": ""
+    },
+    "ramdisk": {
+      "compression": "lz4-legacy",
+      "uncompressed_size": 3249920,
+      "cpio_sha256": "1e6a6969dc2eda4f91c87cbb6826eb039cd02c3562579340f7ea0ca2d96fbf44",
+      "file_count": 12,
+      "archive_end": 3249920,
+      "trailing_nonzero_bytes": 0
+    },
+    "marker_hits": {}
+  },
+  {
+    "path": "<DOWNLOADS>\\initboot-parser-test\\unpacked\\init_boot.img.lz4",
+    "size": 8388608,
+    "sha256": "5da2238992916c3f6a14c3149324a64963af4ec8c26e8bb41569c4e7e52050c4",
+    "avb": {
+      "footer": {
+        "version": "1.0",
+        "original_image_size": 1724928,
+        "vbmeta_offset": 1728512,
+        "vbmeta_size": 2112,
+        "reserved_zero": true
+      },
+      "algorithm_type": 2,
+      "algorithm": "SHA256_RSA4096",
+      "flags": 0,
+      "rollback_index": 0,
+      "rollback_index_location": 0,
+      "release_string": "avbtool 1.2.0",
+      "public_key_sha256": "15f66990b32b613508fa9979a5fc70aa37cb3c3d6043e82a998765716d6f5abd",
+      "descriptors": [
+        {
+          "tag": 2,
+          "size": 208,
+          "partition": "init_boot",
+          "image_size": 1724928,
+          "hash_algorithm": "sha256",
+          "salt": "7a40618b0bb6ea88f2d5624959fd73ed4aea2e14dd40c50803beea7c2966da6a",
+          "expected_digest": "c6a2cda42f59df1de7b9abc4b9d4ea09c3e07546ddda467cd502402d568f897b",
+          "flags": 0,
+          "calculated_digest": "c6a2cda42f59df1de7b9abc4b9d4ea09c3e07546ddda467cd502402d568f897b",
+          "image_hash_matches": true
+        }
+      ],
+      "vbmeta_hash_matches": true,
+      "signature_valid_against_embedded_key": true
+    },
+    "boot": {
+      "header_version": 4,
+      "header_size": 1584,
+      "kernel_size": 0,
+      "ramdisk_size": 1716830,
+      "ramdisk_offset": 4096,
+      "boot_signature_size": 0,
+      "os_version": "14.0.0",
+      "patch_month": "2026-06",
+      "cmdline": ""
+    },
+    "ramdisk": {
+      "compression": "lz4-legacy",
+      "uncompressed_size": 3249920,
+      "cpio_sha256": "cb15d5a1e2ae1ce95ec30d3938cbdbe02e7784223f7da6b3cb0c1b788edfa83d",
+      "file_count": 12,
+      "archive_end": 3249920,
+      "trailing_nonzero_bytes": 0
+    },
+    "marker_hits": {}
+  },
+  {
+    "path": "<DOWNLOADS>\\init_boot_ZZI4_only\\init_boot.img",
+    "size": 8388608,
+    "sha256": "f50885fc4354236e230d7d92d281300c903203fc91e6d67b5231c2568b2b11f4",
+    "avb": {
+      "footer": {
+        "version": "1.0",
+        "original_image_size": 2228224,
+        "vbmeta_offset": 2228224,
+        "vbmeta_size": 2112,
+        "reserved_zero": true
+      },
+      "algorithm_type": 2,
+      "algorithm": "SHA256_RSA4096",
+      "flags": 0,
+      "rollback_index": 0,
+      "rollback_index_location": 0,
+      "release_string": "avbtool 1.2.0",
+      "public_key_sha256": "15f66990b32b613508fa9979a5fc70aa37cb3c3d6043e82a998765716d6f5abd",
+      "descriptors": [
+        {
+          "tag": 2,
+          "size": 208,
+          "partition": "init_boot",
+          "image_size": 1724928,
+          "hash_algorithm": "sha256",
+          "salt": "d7282f8f62d3c7fbc5a98842158e86e177017a5d7bb4309e3f4eed01ee634162",
+          "expected_digest": "8eae2f7ac061f2e012b494fa0bf51c5827bb127572210f737b97ba328a1f3571",
+          "flags": 0,
+          "calculated_digest": "ee8badac71af5afe1753a79f513e4fb18a52fe2b99e7ba718b42ad6b3cd2fb85",
+          "image_hash_matches": false
+        }
+      ],
+      "vbmeta_hash_matches": true,
+      "signature_valid_against_embedded_key": true
+    },
+    "boot": {
+      "header_version": 4,
+      "header_size": 1584,
+      "kernel_size": 0,
+      "ramdisk_size": 2218924,
+      "ramdisk_offset": 4096,
+      "boot_signature_size": 0,
+      "os_version": "14.0.0",
+      "patch_month": "2026-08",
+      "cmdline": ""
+    },
+    "ramdisk": {
+      "compression": "lz4-legacy",
+      "uncompressed_size": 4291428,
+      "cpio_sha256": "c6dd9679c2076c6b473e8a1809a7d7c335277d9c39b42b6cd4314137036a17cd",
+      "file_count": 16,
+      "archive_end": 4291428,
+      "trailing_nonzero_bytes": 0
+    },
+    "marker_hits": {
+      "kernelsu": [
+        "init",
+        "kernelsu.ko"
+      ],
+      "ksud": [
+        "kernelsu.ko"
+      ]
+    }
+  }
+]

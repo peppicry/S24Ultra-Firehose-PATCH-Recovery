@@ -1,0 +1,218 @@
+"""Read-only Android boot/AVB/CPIO inspection. Never connects to a device."""
+import gzip
+import hashlib
+import json
+import pathlib
+import struct
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import padding, rsa
+
+ROOT = pathlib.Path(r'<DOWNLOADS>')
+OUT = pathlib.Path(__file__).resolve().parent
+
+def sha256(data):
+    return hashlib.sha256(data).hexdigest()
+
+def align(n, unit=4096):
+    return (n + unit - 1) // unit * unit
+
+def lz4_block(src):
+    out = bytearray()
+    pos = 0
+    def length(base):
+        nonlocal pos
+        if base == 15:
+            while True:
+                value = src[pos]
+                pos += 1
+                base += value
+                if value != 255:
+                    break
+        return base
+    while pos < len(src):
+        token = src[pos]
+        pos += 1
+        literals = length(token >> 4)
+        assert pos + literals <= len(src), 'Truncated LZ4 literals'
+        out.extend(src[pos:pos + literals])
+        pos += literals
+        if pos == len(src):
+            break
+        offset = struct.unpack_from('<H', src, pos)[0]
+        pos += 2
+        assert 0 < offset <= len(out), 'Invalid LZ4 match offset'
+        size = length(token & 15) + 4
+        assert len(out) + size < 128 * 1024 * 1024, 'Ramdisk exceeds audit limit'
+        start = len(out) - offset
+        # Repeating matches can overlap their destination.
+        pattern = bytes(out[start:])
+        out.extend((pattern * ((size + offset - 1) // offset))[:size])
+    return bytes(out)
+
+def decompress(data):
+    if data[:4] == b'\x02\x21\x4c\x18':
+        blocks = []
+        pos = 4
+        while pos < len(data):
+            size = struct.unpack_from('<I', data, pos)[0]
+            pos += 4
+            if size == 0:
+                break
+            assert size <= len(data) - pos, 'Truncated legacy LZ4 block'
+            blocks.append(lz4_block(data[pos:pos + size]))
+            pos += size
+        return b''.join(blocks), 'lz4-legacy'
+    if data[:2] == b'\x1f\x8b':
+        return gzip.decompress(data), 'gzip'
+    if data[:6] in (b'070701', b'070702'):
+        return data, 'uncompressed'
+    raise ValueError('Unsupported ramdisk compression: ' + data[:8].hex())
+
+def parse_cpio(data):
+    pos = 0
+    files = []
+    contents = {}
+    while pos + 110 <= len(data):
+        assert data[pos:pos+6] in (b'070701', b'070702'), 'Invalid CPIO header at ' + str(pos)
+        values = [int(data[pos+6+i*8:pos+14+i*8], 16) for i in range(13)]
+        inode, mode, uid, gid, nlink, mtime, size, dmaj, dmin, rmaj, rmin, namesize, check = values
+        name_start = pos + 110
+        assert namesize > 0 and name_start + namesize <= len(data)
+        name = data[name_start:name_start+namesize-1].decode('utf-8', 'replace')
+        content_start = align(name_start + namesize, 4)
+        assert content_start + size <= len(data), 'Truncated CPIO data'
+        content = data[content_start:content_start+size]
+        pos = align(content_start+size, 4)
+        if name == 'TRAILER!!!':
+            return files, contents, {'archive_end': pos, 'trailing_nonzero_bytes': sum(b != 0 for b in data[pos:])}
+        files.append({'path': name, 'mode_octal': oct(mode), 'size': size,
+                      'sha256': sha256(content), 'uid': uid, 'gid': gid, 'mtime': mtime})
+        contents[name] = content
+    raise ValueError('Missing CPIO trailer')
+
+def parse_avb(data):
+    footer = None
+    if data[-64:-60] == b'AVBf':
+        magic, major, minor, original, offset, vbsize, reserved = struct.unpack('>4sIIQQQ28s', data[-64:])
+        footer = {'version': f'{major}.{minor}', 'original_image_size': original,
+                  'vbmeta_offset': offset, 'vbmeta_size': vbsize, 'reserved_zero': not any(reserved)}
+    elif data[:4] == b'AVB0':
+        offset = 0
+    else:
+        return {'footer': None, 'error': 'No AVB footer or vbmeta header'}
+    h = data[offset:offset+256]
+    assert h[:4] == b'AVB0' and len(h) == 256
+    u32 = lambda p: struct.unpack_from('>I', h, p)[0]
+    u64 = lambda p: struct.unpack_from('>Q', h, p)[0]
+    authsize, auxsize, algorithm = u64(12), u64(20), u32(28)
+    auth = data[offset+256:offset+256+authsize]
+    aux = data[offset+256+authsize:offset+256+authsize+auxsize]
+    assert len(auth) == authsize and len(aux) == auxsize
+    key = aux[u64(64):u64(64)+u64(72)]
+    hash_alg = 'sha256' if algorithm in (1,2,3) else 'sha512' if algorithm in (4,5,6) else None
+    result = {'footer': footer, 'algorithm_type': algorithm,
+              'algorithm': {0:'NONE',1:'SHA256_RSA2048',2:'SHA256_RSA4096',3:'SHA256_RSA8192',4:'SHA512_RSA2048',5:'SHA512_RSA4096',6:'SHA512_RSA8192'}.get(algorithm,'unknown'),
+              'flags': u32(120), 'rollback_index': u64(112), 'rollback_index_location': u32(124),
+              'release_string': h[128:176].split(b'\0')[0].decode('ascii','replace'),
+              'public_key_sha256': sha256(key), 'descriptors': []}
+    if hash_alg:
+        digest = hashlib.new(hash_alg, h + aux).digest()
+        expected = auth[u64(32):u64(32)+u64(40)]
+        result['vbmeta_hash_matches'] = digest == expected
+        bits = struct.unpack_from('>I', key, 0)[0]
+        modulus = int.from_bytes(key[8:8+bits//8], 'big')
+        signature = auth[u64(48):u64(48)+u64(56)]
+        try:
+            rsa.RSAPublicNumbers(65537, modulus).public_key().verify(
+                signature, h + aux, padding.PKCS1v15(), hashes.SHA256() if hash_alg == 'sha256' else hashes.SHA512())
+            result['signature_valid_against_embedded_key'] = True
+        except Exception as error:
+            result['signature_valid_against_embedded_key'] = False
+            result['signature_error'] = type(error).__name__
+    p, end = u64(96), u64(96) + u64(104)
+    assert end <= len(aux)
+    while p < end:
+        tag, following = struct.unpack_from('>QQ', aux, p)
+        block = aux[p:p+16+following]
+        assert len(block) == 16+following
+        desc = {'tag': tag, 'size': len(block)}
+        if tag == 2:
+            image_size, hash_name, name_len, salt_len, digest_len, flags = struct.unpack_from('>Q32sIIII', block, 16)
+            name = block[132:132+name_len].decode('utf-8','replace')
+            salt = block[132+name_len:132+name_len+salt_len]
+            digest = block[132+name_len+salt_len:132+name_len+salt_len+digest_len]
+            hash_name = hash_name.split(b'\0')[0].decode('ascii')
+            desc.update({'partition': name, 'image_size': image_size, 'hash_algorithm': hash_name,
+                         'salt': salt.hex(), 'expected_digest': digest.hex(), 'flags': flags})
+            if footer and name == 'init_boot':
+                calculated = hashlib.new(hash_name, salt + data[:image_size]).digest()
+                desc['calculated_digest'] = calculated.hex()
+                desc['image_hash_matches'] = calculated == digest
+        elif tag == 0:
+            key_len, value_len = struct.unpack_from('>QQ', block, 16)
+            key_start = 32
+            value_start = key_start+key_len+1
+            desc.update({'key': block[key_start:key_start+key_len].decode('utf-8','replace'),
+                         'value': block[value_start:value_start+value_len].decode('utf-8','replace')})
+        elif tag == 4:
+            rollback, name_len, pk_len = struct.unpack_from('>III', block, 16)
+            desc.update({'rollback_index_location': rollback,
+                         'partition': block[92:92+name_len].decode('utf-8','replace'),
+                         'public_key_sha256': sha256(block[92+name_len:92+name_len+pk_len])})
+        result['descriptors'].append(desc)
+        p += 16 + following
+    assert p == end
+    return result
+
+def inspect(path, detailed=False):
+    data = path.read_bytes()
+    result = {'path': str(path), 'size': len(data), 'sha256': sha256(data), 'avb': parse_avb(data)}
+    if data[:8] != b'ANDROID!':
+        return result
+    kernel_size, ramdisk_size, osversion, headersize = struct.unpack_from('<4I', data, 8)
+    version = struct.unpack_from('<I', data, 40)[0]
+    assert version in (3, 4), 'Unsupported boot header'
+    ramdisk_offset = 4096 + align(kernel_size)
+    signature_size = struct.unpack_from('<I', data, 1580)[0] if version == 4 else 0
+    result['boot'] = {'header_version': version, 'header_size': headersize, 'kernel_size': kernel_size,
+                      'ramdisk_size': ramdisk_size, 'ramdisk_offset': ramdisk_offset,
+                      'boot_signature_size': signature_size,
+                      'os_version': f'{(osversion>>25)&127}.{(osversion>>18)&127}.{(osversion>>11)&127}',
+                      'patch_month': f'{2000+((osversion>>4)&127):04d}-{osversion&15:02d}',
+                      'cmdline': data[44:1580].split(b'\0')[0].decode('utf-8','replace')}
+    cpio, compression = decompress(data[ramdisk_offset:ramdisk_offset+ramdisk_size])
+    files, contents, cpio_end = parse_cpio(cpio)
+    result['ramdisk'] = {'compression': compression, 'uncompressed_size': len(cpio),
+                        'cpio_sha256': sha256(cpio), 'file_count': len(files), **cpio_end}
+    markers = [b'magisk', b'kernelsu', b'ksud', b'apatch', b'overlay.d', b'.backup', b'.magisk', b'supolicy']
+    result['marker_hits'] = {m.decode(): [name for name, body in contents.items() if m in name.lower().encode() or m in body.lower()] for m in markers}
+    result['marker_hits'] = {m: paths for m, paths in result['marker_hits'].items() if paths}
+    if detailed:
+        result['files'] = files
+        result['text_files'] = {name: body.decode('utf-8','replace') for name,body in contents.items()
+                                if len(body)<100000 and (name.endswith(('.rc','.prop','.conf')) or '.magisk' in name or name.endswith('config'))}
+        OUT.mkdir(parents=True,exist_ok=True)
+        (OUT/'ramdisk.cpio').write_bytes(cpio)
+    return result
+
+def main():
+    paths = [ROOT/'init_boot_0', ROOT/'init_boot.img', ROOT/'init_boot (1).img',
+             ROOT/'init_boot_beta_android17.img', ROOT/'init_teste_boot.img',
+             ROOT/'initboot-stock-tar'/'init_boot.img',
+             ROOT/'initboot-stock-tar'/'unpacked'/'init_boot.img',
+             ROOT/'initboot-parser-test'/'unpacked'/'init_boot.img.lz4',
+             ROOT/'init_boot_ZZI4_only'/'init_boot.img']
+    reports = []
+    for path in paths:
+        if not path.is_file():
+            continue
+        try:
+            result = inspect(path, path.name == 'init_boot_0')
+        except Exception as error:
+            result = {'path': str(path), 'error': str(error), 'error_type': type(error).__name__}
+        reports.append(result)
+        print(json.dumps({k:v for k,v in result.items() if k not in ('files','text_files')}, ensure_ascii=False))
+    (OUT/'audit.json').write_text(json.dumps(reports,ensure_ascii=False,indent=2),encoding='utf-8')
+
+if __name__ == '__main__':
+    main()

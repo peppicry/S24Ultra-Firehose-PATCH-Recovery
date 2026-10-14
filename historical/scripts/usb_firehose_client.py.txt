@@ -1,0 +1,151 @@
+"""Use the installed UsbDk to access only a single Qualcomm 9008 device.
+
+The existing read and fixed-init_boot write clients retain their validation
+and command guards. Only their serial byte transport is replaced with
+PyUSB/libusb bulk transfers. No driver installation or device reset is used.
+
+API references: https://github.com/libusb/libusb/wiki/Windows
+https://pypi.org/project/libusb-package/
+"""
+import argparse
+import ctypes
+import json
+import os
+import pathlib
+import sys
+import datetime
+
+OUT=pathlib.Path(__file__).resolve().parent
+sys.path.insert(0,str(OUT/'vendor'))
+USB_DK_DIR=pathlib.Path('C:/Program Files/UsbDk Runtime Library')
+if not (USB_DK_DIR/'UsbDkHelper.dll').is_file():
+    raise SystemExit('UsbDk instalado nao foi encontrado')
+_dll_directory=os.add_dll_directory(str(USB_DK_DIR))
+os.environ['PATH']=str(USB_DK_DIR)+os.pathsep+os.environ.get('PATH','')
+
+import libusb_package
+import usb.core
+import usb.util
+
+import read_current_images as reader
+import restore_init_boot_direct as writer
+
+def progress(stage,**details):
+    entry={'at':datetime.datetime.now().astimezone().isoformat(),'stage':stage,**details}
+    (OUT/'usb_transport_progress.json').write_text(json.dumps(entry,indent=2),encoding='utf-8')
+    print(json.dumps(entry),flush=True)
+
+def get_backend():
+    backend=libusb_package.get_libusb1_backend()
+    if backend is None:
+        raise RuntimeError('libusb nao foi carregado')
+    backend.lib.libusb_set_option.argtypes=[ctypes.c_void_p,ctypes.c_int]
+    backend.lib.libusb_set_option.restype=ctypes.c_int
+    code=backend.lib.libusb_set_option(backend.ctx,1) # LIBUSB_OPTION_USE_USBDK
+    if code!=0:
+        raise RuntimeError('libusb nao ativou UsbDk: '+str(code))
+    return backend
+
+class UsbDirectConnection:
+    transport_backend='usb_bulk_usbdk'
+    def __init__(self):
+        self.write_timeout=30
+        progress('initializing_usbdk_backend')
+        self.backend=get_backend()
+        devices=list(usb.core.find(find_all=True,idVendor=0x05C6,idProduct=0x9008,
+                                   backend=self.backend))
+        if len(devices)!=1:
+            raise RuntimeError('Precisa haver exatamente um dispositivo Qualcomm 9008')
+        self.device=devices[0]
+        progress('matched_device',bus=self.device.bus,address=self.device.address)
+        self.interface=None
+        try:
+            progress('opening_device_getting_active_configuration')
+            configuration=self.device.get_active_configuration()
+            progress('active_configuration_received')
+            candidates=[]
+            for interface in configuration:
+                if interface.bAlternateSetting!=0:
+                    continue
+                inputs=[ep for ep in interface if
+                        usb.util.endpoint_type(ep.bmAttributes)==usb.util.ENDPOINT_TYPE_BULK and
+                        usb.util.endpoint_direction(ep.bEndpointAddress)==usb.util.ENDPOINT_IN]
+                outputs=[ep for ep in interface if
+                         usb.util.endpoint_type(ep.bmAttributes)==usb.util.ENDPOINT_TYPE_BULK and
+                         usb.util.endpoint_direction(ep.bEndpointAddress)==usb.util.ENDPOINT_OUT]
+                if len(inputs)==1 and len(outputs)==1:
+                    candidates.append((interface,inputs[0],outputs[0]))
+            if len(candidates)!=1:
+                raise RuntimeError('Interface bulk unica nao encontrada; sem tentativa de acesso')
+            interface,self.input_ep,self.output_ep=candidates[0]
+            self.interface=interface.bInterfaceNumber
+            progress('claiming_interface',interface=self.interface)
+            usb.util.claim_interface(self.device,self.interface)
+            self.info={'backend':self.transport_backend,
+                       'bus':self.device.bus,'address':self.device.address,
+                       'interface':self.interface,
+                       'endpoint_in':hex(self.input_ep.bEndpointAddress),
+                       'endpoint_out':hex(self.output_ep.bEndpointAddress),
+                       'max_packet_in':self.input_ep.wMaxPacketSize,
+                       'max_packet_out':self.output_ep.wMaxPacketSize}
+            progress('bulk_interface_ready',**self.info)
+        except BaseException as error:
+            progress('usb_open_failed',error=str(error),
+                     backend_error_code=getattr(error,'backend_error_code',None))
+            usb.util.dispose_resources(self.device)
+            raise
+
+    def read(self,length):
+        try:
+            return bytes(self.device.read(self.input_ep.bEndpointAddress,length,timeout=1000))
+        except usb.core.USBTimeoutError:
+            return b''
+
+    def write(self,data):
+        return self.device.write(self.output_ep.bEndpointAddress,data,
+                                 timeout=int(self.write_timeout*1000))
+
+    def close(self):
+        try:
+            if self.interface is not None:
+                usb.util.release_interface(self.device,self.interface)
+        finally:
+            usb.util.dispose_resources(self.device)
+
+class UsbReader(reader.FirehoseReadTransport):
+    def __init__(self,port_label):
+        self.connection=UsbDirectConnection()
+        self.buffer=bytearray()
+        self.events=[{'usb_transport':self.connection.info,
+                      'previous_com_label':port_label}]
+
+class UsbInitBootWriter(writer.InitBootWriter):
+    def __init__(self,port_label):
+        self.connection=UsbDirectConnection()
+        self.buffer=bytearray()
+        self.events=[{'usb_transport':self.connection.info,
+                      'previous_com_label':port_label}]
+
+def main():
+    parser=argparse.ArgumentParser()
+    parser.add_argument('--mode',choices=('enumerate','read-only','write-original'),required=True)
+    parser.add_argument('--port-label',default='COM20')
+    args=parser.parse_args()
+    if args.mode=='enumerate':
+        backend=get_backend()
+        devices=list(usb.core.find(find_all=True,idVendor=0x05C6,idProduct=0x9008,
+                                   backend=backend))
+        print(json.dumps({'backend':'usb_bulk_usbdk',
+                          'matching_device_count':len(devices),
+                          'devices':[{'bus':d.bus,'address':d.address,
+                                      'vid':hex(d.idVendor),'pid':hex(d.idProduct)} for d in devices]},indent=2))
+        return 0
+    sys.argv=[sys.argv[0],'--port',args.port_label]
+    if args.mode=='read-only':
+        reader.FirehoseReadTransport=UsbReader
+        return reader.main()
+    writer.InitBootWriter=UsbInitBootWriter
+    return writer.main()
+
+if __name__=='__main__':
+    raise SystemExit(main())

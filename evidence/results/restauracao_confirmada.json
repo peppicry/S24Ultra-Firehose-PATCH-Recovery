@@ -1,0 +1,15 @@
+{
+  "verified_at": "2026-10-14T12:03:11.519864+02:00",
+  "hardware_read_finished_at": "2026-10-14T12:01:41.370659+02:00",
+  "full_partition_bytes": 8388608,
+  "readback_equals_original_byte_for_byte": true,
+  "readback_sha256": "f61c74bab1781862e48f8abc4a8b7865f0ba661658a3807431395edc1ce069c8",
+  "readback_path": "<WORKSPACE>\\outputs\\s24-edl-diagnostico\\init_boot_restaurado_lido_do_celular.img",
+  "only_written_partition": "init_boot",
+  "method": "Firehose PATCH with each changed sector and full-image readback",
+  "root_vbmeta_sha256_verified_before_restoration": "07382ae3f7a655b4598f9f82c34dd07a18ff21ee76b235676a3697e882a2e3b4",
+  "original_matches_verified_root_vbmeta": true,
+  "phone_boot_result": "android_started_successfully_reported_by_owner",
+  "owner_confirmation": "O proprietário confirmou que, depois do reinício, o aparelho abriu o Android.",
+  "owner_confirmation_recorded_at": "2026-10-14T12:07:53.868870+02:00"
+}

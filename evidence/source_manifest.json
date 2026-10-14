@@ -1,0 +1,461 @@
+{
+  "schema_version": 1,
+  "description": "Sanitized text exports; original inputs retained locally.",
+  "redactions": [
+    "local absolute paths",
+    "received_hex and initial_received_hex fields",
+    "process_id and thread_id fields",
+    "host handles, thread IDs and context addresses in USB debug text",
+    "HTML styling/markup in UnlockTool exports"
+  ],
+  "artifacts": [
+    {
+      "source_name": "observe_protocol.py",
+      "source_bytes": 2811,
+      "source_sha256": "872e614a099e9e4c352ec4dcdc5e719a7427c301e829fef6ef8a2323efd4b900",
+      "export_path": "historical/scripts/observe_protocol.py.txt",
+      "export_bytes": 2811,
+      "export_sha256": "872e614a099e9e4c352ec4dcdc5e719a7427c301e829fef6ef8a2323efd4b900"
+    },
+    {
+      "source_name": "probe_firehose_nop.py",
+      "source_bytes": 3996,
+      "source_sha256": "59186cf3f10bb60d276bd065654a34d6c18ed216a5dabee50074ff890349024f",
+      "export_path": "historical/scripts/probe_firehose_nop.py.txt",
+      "export_bytes": 3996,
+      "export_sha256": "59186cf3f10bb60d276bd065654a34d6c18ed216a5dabee50074ff890349024f"
+    },
+    {
+      "source_name": "read_current_images.py",
+      "source_bytes": 8573,
+      "source_sha256": "4148d5e0e7d268c304b62b5b3af377da98b6a4cc3996baf932e58391307cd99e",
+      "export_path": "historical/scripts/read_current_images.py.txt",
+      "export_bytes": 8573,
+      "export_sha256": "4148d5e0e7d268c304b62b5b3af377da98b6a4cc3996baf932e58391307cd99e"
+    },
+    {
+      "source_name": "restore_init_boot_direct.py",
+      "source_bytes": 8157,
+      "source_sha256": "7ed5fe388da23b6d75ec2df15e26b0ec9143edad49aec8c1dd25ba5534ebbff3",
+      "export_path": "historical/scripts/restore_init_boot_direct.py.txt",
+      "export_bytes": 8157,
+      "export_sha256": "7ed5fe388da23b6d75ec2df15e26b0ec9143edad49aec8c1dd25ba5534ebbff3"
+    },
+    {
+      "source_name": "restore_init_boot_fragmented.py",
+      "source_bytes": 8760,
+      "source_sha256": "f50afd9bb8cb17b75537dabfc4e730d0bd68e2d717a286789a817be7c39be656",
+      "export_path": "historical/scripts/restore_init_boot_fragmented.py.txt",
+      "export_bytes": 8760,
+      "export_sha256": "f50afd9bb8cb17b75537dabfc4e730d0bd68e2d717a286789a817be7c39be656"
+    },
+    {
+      "source_name": "probe_init_boot_patch.py",
+      "source_bytes": 5028,
+      "source_sha256": "56c8a221cfb8465d0a6614cb4f3edb7e29e37764e171556ee7710d58ce146113",
+      "export_path": "historical/scripts/probe_init_boot_patch.py.txt",
+      "export_bytes": 5028,
+      "export_sha256": "56c8a221cfb8465d0a6614cb4f3edb7e29e37764e171556ee7710d58ce146113"
+    },
+    {
+      "source_name": "probe_original_word_patch.py",
+      "source_bytes": 5837,
+      "source_sha256": "797d103dd6e35c52ebc3804f94c4b56ca5f79792c0a2b28928eeae2d62b91a56",
+      "export_path": "historical/scripts/probe_original_word_patch.py.txt",
+      "export_bytes": 5837,
+      "export_sha256": "797d103dd6e35c52ebc3804f94c4b56ca5f79792c0a2b28928eeae2d62b91a56"
+    },
+    {
+      "source_name": "restore_init_boot_patch.py",
+      "source_bytes": 11499,
+      "source_sha256": "baa8eab2fe682bfb6cc2864a58758aa3e7db6e48b68decdae43e96299ca73f23",
+      "export_path": "historical/scripts/restore_init_boot_patch.py.txt",
+      "export_bytes": 11499,
+      "export_sha256": "baa8eab2fe682bfb6cc2864a58758aa3e7db6e48b68decdae43e96299ca73f23"
+    },
+    {
+      "source_name": "usb_firehose_client.py",
+      "source_bytes": 6641,
+      "source_sha256": "ad3e8dafa0468ccaf4686a9707755cede22593a98acb99fee1af461cd1e0f60e",
+      "export_path": "historical/scripts/usb_firehose_client.py.txt",
+      "export_bytes": 6641,
+      "export_sha256": "ad3e8dafa0468ccaf4686a9707755cede22593a98acb99fee1af461cd1e0f60e"
+    },
+    {
+      "source_name": "inspect_public_loader.py",
+      "source_bytes": 2422,
+      "source_sha256": "3f82efb77b2e6e5ba1381c26f650360eb92e056c5332bbb70c3a135364eeb634",
+      "export_path": "historical/scripts/inspect_public_loader.py.txt",
+      "export_bytes": 2422,
+      "export_sha256": "3f82efb77b2e6e5ba1381c26f650360eb92e056c5332bbb70c3a135364eeb634"
+    },
+    {
+      "source_name": "audit_init_boot.py",
+      "source_bytes": 10875,
+      "source_sha256": "c2c869a977e35b14cfb06606bf0de1e4614a8e9c4cfbf02d49ae7fb2152ffbbe",
+      "export_path": "historical/audit/audit_init_boot.py.txt",
+      "export_bytes": 10863,
+      "export_sha256": "7f27109a7f9136eaae6d473eaf614866483f3955914a9b8ede9b3f5810190c58"
+    },
+    {
+      "source_name": "compare_init_boot.py",
+      "source_bytes": 2738,
+      "source_sha256": "ed3d1a3b78a8e53979818c848cab40adafe42a9ec5cd48b7f0e122d8a1cffcf1",
+      "export_path": "historical/audit/compare_init_boot.py.txt",
+      "export_bytes": 2738,
+      "export_sha256": "ed3d1a3b78a8e53979818c848cab40adafe42a9ec5cd48b7f0e122d8a1cffcf1"
+    },
+    {
+      "source_name": "compare_readback.py",
+      "source_bytes": 1926,
+      "source_sha256": "5158c137d90c9382a43399ee494f9c969cdc655ce240e7e85103f99f0a91775b",
+      "export_path": "historical/audit/compare_readback.py.txt",
+      "export_bytes": 1926,
+      "export_sha256": "5158c137d90c9382a43399ee494f9c969cdc655ce240e7e85103f99f0a91775b"
+    },
+    {
+      "source_name": "check_other_images.py",
+      "source_bytes": 2536,
+      "source_sha256": "481a76f4d4c358d8bf80b35b2698b745fc3f5e95584094b4016b4732438ae6e4",
+      "export_path": "historical/audit/check_other_images.py.txt",
+      "export_bytes": 2536,
+      "export_sha256": "481a76f4d4c358d8bf80b35b2698b745fc3f5e95584094b4016b4732438ae6e4"
+    },
+    {
+      "source_name": "verify_live_pair.py",
+      "source_bytes": 2887,
+      "source_sha256": "169d0b63d5f490aa59d01bd524fa756f2fee692b726116a15bd63ec36b8f681f",
+      "export_path": "historical/audit/verify_live_pair.py.txt",
+      "export_bytes": 2887,
+      "export_sha256": "169d0b63d5f490aa59d01bd524fa756f2fee692b726116a15bd63ec36b8f681f"
+    },
+    {
+      "source_name": "package_restore.py",
+      "source_bytes": 8143,
+      "source_sha256": "35515a36f26bc5a7b34a54b86f5fb2f961b25f191f3d465a2dc2ba75ab43f02f",
+      "export_path": "historical/audit/package_restore.py.txt",
+      "export_bytes": 8143,
+      "export_sha256": "35515a36f26bc5a7b34a54b86f5fb2f961b25f191f3d465a2dc2ba75ab43f02f"
+    },
+    {
+      "source_name": "package_odin.py",
+      "source_bytes": 3548,
+      "source_sha256": "df4dde3be5c77ddb65828acbf6d7eea8d350559267eb51c26d0d9bc1f4e7de5b",
+      "export_path": "historical/audit/package_odin.py.txt",
+      "export_bytes": 3548,
+      "export_sha256": "df4dde3be5c77ddb65828acbf6d7eea8d350559267eb51c26d0d9bc1f4e7de5b"
+    },
+    {
+      "source_name": "passive_observation.json",
+      "source_bytes": 289,
+      "source_sha256": "b24cb204dbf7b64755e492f9a612f5731c41d4d89a7a7a270ecaf57d4dba5851",
+      "export_path": "evidence/results/passive_observation.json",
+      "export_bytes": 258,
+      "export_sha256": "8083efbc94ab1ad3d42b3b9b98072a20c97601f84ffbe56b3e3a7fea14c0c130"
+    },
+    {
+      "source_name": "firehose_nop_result.json",
+      "source_bytes": 6309,
+      "source_sha256": "f4672355e2585b42650f48f3525d0b831b12dafbacdb05d0ccac43409c45a05a",
+      "export_path": "evidence/results/firehose_nop_result.json",
+      "export_bytes": 2452,
+      "export_sha256": "6fbcb03e4fec582913918170c916fac2126f8dfe7a1e9d1733eeb0746c574d74"
+    },
+    {
+      "source_name": "direct_write_attempt_1.json",
+      "source_bytes": 10514,
+      "source_sha256": "b31c55e843e441dfbca171054495d47b04776f76ee4414faa286d1c4eb8d6a0d",
+      "export_path": "evidence/results/direct_write_attempt_1.json",
+      "export_bytes": 10075,
+      "export_sha256": "cd6d15158c9e196c779dff70357d0cb54238e8099724004470dfa4e8ac875eae"
+    },
+    {
+      "source_name": "direct_write_attempt_2.json",
+      "source_bytes": 10546,
+      "source_sha256": "3e43c15b0022648983fd8e650faf36a381e4109780e8ea9d7532521baa16d93e",
+      "export_path": "evidence/results/direct_write_attempt_2.json",
+      "export_bytes": 10106,
+      "export_sha256": "38701fb8a78d47a0311b0c7c4686eb7e1af121e9e8e99bfba354e89f7c4c3ea9"
+    },
+    {
+      "source_name": "current_read_post_fragmented.json",
+      "source_bytes": 10008,
+      "source_sha256": "63a2f319d9c6e508b4baaed5eb5d63827d67101792a8ff42dc8f7bb90c36942e",
+      "export_path": "evidence/results/current_read_post_fragmented.json",
+      "export_bytes": 9627,
+      "export_sha256": "71cc279db5da6d177dd7170c31cc519dfca31ac15599def8ada9c62eb060525c"
+    },
+    {
+      "source_name": "fragmented_write_result.json",
+      "source_bytes": 106894,
+      "source_sha256": "0a48f8827d070198d450da02630a931fae8595b37108c76db979315e2ad6316e",
+      "export_path": "evidence/results/fragmented_write_result.json",
+      "export_bytes": 104346,
+      "export_sha256": "3f89ae45ecb8c8043ce40f0dbafc4b34def6bd87c322c3145fcf2b16b1c56c73"
+    },
+    {
+      "source_name": "init_boot_patch_probe_result.json",
+      "source_bytes": 12800,
+      "source_sha256": "ed8b3a915bc10fdb2653c07023f2b55255730c06f3d089b4fb332bb4da739104",
+      "export_path": "evidence/results/init_boot_patch_probe_result.json",
+      "export_bytes": 12314,
+      "export_sha256": "a32ce1ea74e6a53cc0ef54633c7edc1d6b945caded5d327601c0d0b99f4fbd30"
+    },
+    {
+      "source_name": "original_word_patch_result.json",
+      "source_bytes": 12984,
+      "source_sha256": "626cdf2527cde5eb0484384b7ca13018b41415eb7acc7cff087a089b334f6f1d",
+      "export_path": "evidence/results/original_word_patch_result.json",
+      "export_bytes": 12494,
+      "export_sha256": "eb387d80a84573016b64b303a6e64ed320e5749ebdaacfdf18c0ae832850bb5d"
+    },
+    {
+      "source_name": "patch_restore_20261014_115410.json",
+      "source_bytes": 17774,
+      "source_sha256": "11532225fd3d7879335581f581d57c035b08b95b4d32ea2f3068662f7e6beecf",
+      "export_path": "evidence/results/patch_restore_20261014_115410.json",
+      "export_bytes": 17255,
+      "export_sha256": "da7b7a9db316044ff49182470cf01c63ce626908a5cb17d4e5102e22a9a539f5"
+    },
+    {
+      "source_name": "patch_restore_20261014_115515.json",
+      "source_bytes": 17657,
+      "source_sha256": "c1d6567a53c000a001e40a4b31984025f5ed1797013983f2ceefe2ea38aad4e9",
+      "export_path": "evidence/results/patch_restore_20261014_115515.json",
+      "export_bytes": 17065,
+      "export_sha256": "700f7a907b84e806e10ceb8254f0f41dbfdef0a0fc3c6b4fec98e4712da9bbfc"
+    },
+    {
+      "source_name": "restauracao_confirmada.json",
+      "source_bytes": 1006,
+      "source_sha256": "f22690231859ce31dee5142651298331a639c1b7affe2e406ba32cb9ccf37e21",
+      "export_path": "evidence/results/restauracao_confirmada.json",
+      "export_bytes": 944,
+      "export_sha256": "a4ba89a899b775555aedf9db4ac788eef5f68d1b741db4a1d85b985d045ef18e"
+    },
+    {
+      "source_name": "pre_write_validation.json",
+      "source_bytes": 1180,
+      "source_sha256": "d2e65bf917f987e1ebd4efff752b851fe7ba069aa7729c3c71642260feb1947b",
+      "export_path": "evidence/results/pre_write_validation.json",
+      "export_bytes": 1085,
+      "export_sha256": "23a424b4e2faeadfcaed4b7bdb0084d22b7b43bb41a24933caf0a50170b9c032"
+    },
+    {
+      "source_name": "usb_transport_progress.json",
+      "source_bytes": 90,
+      "source_sha256": "8fe5a927037bbcd1293eed7238e45388ddbbf6fea26401124df1b031a57c7207",
+      "export_path": "evidence/results/usb_transport_progress.json",
+      "export_bytes": 88,
+      "export_sha256": "67ed7515cc38ac08dc1610180517f9e259c546b13863a68b7346930ccbccc14b"
+    },
+    {
+      "source_name": "public_loader_offline_inspection.json",
+      "source_bytes": 528,
+      "source_sha256": "85d6aaae0fd4f7f9fc31230e9f216db78d6be631477ce53ac7ed0a146d4a5d99",
+      "export_path": "evidence/results/public_loader_offline_inspection.json",
+      "export_bytes": 470,
+      "export_sha256": "b830c9d4d162b76f7c158da9e61d578c4421b709ef04d073668b2f90be865416"
+    },
+    {
+      "source_name": "audit.json",
+      "source_bytes": 22800,
+      "source_sha256": "3f309ad1965eee1af6ff37bf68cc07990690455116056ea2816a1fb0013c8696",
+      "export_path": "evidence/audit/audit.json",
+      "export_bytes": 21978,
+      "export_sha256": "7d8e89e42d1d7a3ac69d6a0f370aed984b2708835f69163b325282c0b07ad136"
+    },
+    {
+      "source_name": "comparison.json",
+      "source_bytes": 1952,
+      "source_sha256": "5afd2c8dab06239d49c74ba70a95c25a3dcbd230b6e2e347a847daceea5fcf0d",
+      "export_path": "evidence/audit/comparison.json",
+      "export_bytes": 1848,
+      "export_sha256": "f7241468746202f022cf80b0106590105a3fbe703c933e93ab233732af0bac10"
+    },
+    {
+      "source_name": "actual_readback_verification.json",
+      "source_bytes": 2764,
+      "source_sha256": "a25e71b790a338c23331b1c44d562bb4420ead6e709503e4468314a9eb2b1002",
+      "export_path": "evidence/audit/actual_readback_verification.json",
+      "export_bytes": 2471,
+      "export_sha256": "a3b56d803d5fc3d7576c4e817199e887cdc37a670544984ba39bf94b66694dc2"
+    },
+    {
+      "source_name": "comparacao_pos_write_22-03.json",
+      "source_bytes": 3369,
+      "source_sha256": "0fbd46d56ec2cfa9c0bff720f14acc606465acbcc8c725ac2ce760258061e9a4",
+      "export_path": "evidence/audit/comparacao_pos_write_22-03.json",
+      "export_bytes": 2971,
+      "export_sha256": "7443d84669eda521cb3904ce06d0a675bf36ad51a4c939b123bf3f33c1246b56"
+    },
+    {
+      "source_name": "root_vbmeta_actual_read.json",
+      "source_bytes": 3548,
+      "source_sha256": "896a98492ae04f3bce58621d633a0fabf41f8c64eb2caa2880dd8e9825bb92c3",
+      "export_path": "evidence/audit/root_vbmeta_actual_read.json",
+      "export_bytes": 3411,
+      "export_sha256": "78d029cccee471569b3bf8aa52b3db8dbd7594fe0c0c8469da5d462eb4ee395b"
+    },
+    {
+      "source_name": "other_images.json",
+      "source_bytes": 6570,
+      "source_sha256": "18fabccdafb6c4166b4baeb5bce4cbf34d97b98f77c9f89c26d37ca564fd5606",
+      "export_path": "evidence/audit/other_images.json",
+      "export_bytes": 6280,
+      "export_sha256": "e36efa8bb917626e526d4088ac46edaf85ad168ccf710f99beb3d26370b250b3"
+    },
+    {
+      "source_name": "usb_debug_read.log",
+      "source_bytes": 2298,
+      "source_sha256": "8e2a2ef98a9661a23c91b93ec8d6008c352a1e6afce6a5ff3ac3e51c692a5338",
+      "export_path": "evidence/transport/usb_debug_read.log",
+      "export_bytes": 2314,
+      "export_sha256": "24fd80cce45d3cc8822b14c860952ba8d7659e3ce3406d9dd9666116f50479db"
+    },
+    {
+      "source_name": "diagnostico-program-recusado-11-29.txt",
+      "source_bytes": 6223,
+      "source_sha256": "9ed3fdc1e0fb690cff25009d87d93920d39e28232a56db01aa6199a5e9382a37",
+      "export_path": "historical/reports/diagnostico-program-recusado-11-29.txt",
+      "export_bytes": 6222,
+      "export_sha256": "89067960edd14070bdffc5575c9750f542f993ad49fe7e1d8a9aaae0483ee2c2"
+    },
+    {
+      "source_name": "Relatorio_recuperacao_S24_Ultra.txt",
+      "source_bytes": 9783,
+      "source_sha256": "a40730be94ba4937b0a2a708307d812dd20a07256084f2eb4a11c0851521ce43",
+      "export_path": "historical/reports/Relatorio_recuperacao_S24_Ultra.txt",
+      "export_bytes": 9569,
+      "export_sha256": "2acea83a331889ac765efe4ac162db42588b60ce65ab8d22a2a8d7064ef536d4"
+    },
+    {
+      "source_name": "rawprogram_init_boot.xml",
+      "source_bytes": 448,
+      "source_sha256": "55e73eb12fba39627f0ab8e102361753311385f7d6ebd98897633bc92c566667",
+      "export_path": "historical/config/rawprogram_init_boot.xml.txt",
+      "export_bytes": 444,
+      "export_sha256": "7ebf9ed403dd3ac7304e804e33c891d5a1311da1d8ec8266a57d82cf99f1ff2d"
+    },
+    {
+      "source_name": "2026-10-13_20-15-58_BOOT DEVICE.htm",
+      "source_bytes": 2970,
+      "source_sha256": "abd2dc67adf5d0c3b145ee2f118c3eff263a882d5a1f147588c8970811cfa9ae",
+      "export_path": "evidence/unlocktool/2026-10-13_20-15-58_BOOT DEVICE.txt",
+      "export_bytes": 792,
+      "export_sha256": "0ce72f5c47266dfa84447c618f942a661e57c5c81f72f9e505b5c5609c314628"
+    },
+    {
+      "source_name": "2026-10-13_20-49-00_FLASH.htm",
+      "source_bytes": 2738,
+      "source_sha256": "3336383568e6cd2b669e4882318ff7653ee00ea55d4a536a8858eda1f346c983",
+      "export_path": "evidence/unlocktool/2026-10-13_20-49-00_FLASH.txt",
+      "export_bytes": 661,
+      "export_sha256": "aeaedf64259a6567f47d6b0fbae18c1f0824841cfa51e9217681f61c2e69505f"
+    },
+    {
+      "source_name": "2026-10-13_21-49-07_BOOT DEVICE.htm",
+      "source_bytes": 2964,
+      "source_sha256": "7fac1a878cdb1f57e0cfddbe9f82a0a527051f65e4de0a3ace29c486cacdb83e",
+      "export_path": "evidence/unlocktool/2026-10-13_21-49-07_BOOT DEVICE.txt",
+      "export_bytes": 760,
+      "export_sha256": "9af729cb004322807c7f0c2a16af5912ceb695e32f4a68344a5412d7e3154836"
+    },
+    {
+      "source_name": "2026-10-13_21-54-24_MANUAL_SAVE.htm",
+      "source_bytes": 1460,
+      "source_sha256": "a77e2bcf016bcb99d867107afbb435db3075fb967021a2c44e29f1345e9dbb4f",
+      "export_path": "evidence/unlocktool/2026-10-13_21-54-24_MANUAL_SAVE.txt",
+      "export_bytes": 151,
+      "export_sha256": "3794feefc74b4f8d8197b34eef5e5aa1f553bf7e5c590f3506ffe769ddd22dea"
+    },
+    {
+      "source_name": "2026-10-14_10-15-55_BOOT DEVICE.htm",
+      "source_bytes": 2972,
+      "source_sha256": "1eb21ccf5ed000359601641bdec1b64679cd5f2f4a496a3d044b2c5a8ccd5620",
+      "export_path": "evidence/unlocktool/2026-10-14_10-15-55_BOOT DEVICE.txt",
+      "export_bytes": 794,
+      "export_sha256": "4215ebc732b55aecf239d01c1dcc333ec5c7f76725487602f048801e055122b2"
+    },
+    {
+      "source_name": "2026-10-14_10-37-52_BOOT DEVICE.htm",
+      "source_bytes": 2972,
+      "source_sha256": "0ba464194a10d83e6337c1d4e4f0439408fa2aa1253754b0d6d1413e77f62e2e",
+      "export_path": "evidence/unlocktool/2026-10-14_10-37-52_BOOT DEVICE.txt",
+      "export_bytes": 794,
+      "export_sha256": "80cc4404a4e707080bfa6bcd4be9e6aa93ead4fd8d47535c34cac819636d331b"
+    },
+    {
+      "source_name": "2026-10-14_10-48-30_BOOT DEVICE.htm",
+      "source_bytes": 3120,
+      "source_sha256": "00fe4bcce7eef4eb7ff2745cc6228e84cb74ce67097333f9b270d04975ffc4a6",
+      "export_path": "evidence/unlocktool/2026-10-14_10-48-30_BOOT DEVICE.txt",
+      "export_bytes": 858,
+      "export_sha256": "2fbf40a4a66d20f6a53c95cafc461b8daebd49d6300af9ac81c7e85309eee03b"
+    },
+    {
+      "source_name": "2026-10-14_10-54-04_BOOT DEVICE.htm",
+      "source_bytes": 2970,
+      "source_sha256": "e432c0dc6cabfcfc541aaa53b068dcaa4f8763b51783ee5e1c0eea449a3634bc",
+      "export_path": "evidence/unlocktool/2026-10-14_10-54-04_BOOT DEVICE.txt",
+      "export_bytes": 792,
+      "export_sha256": "65d8b6f3f0d0b9d03f5e373754b59572fd1151f70395dfda7d0ea3102db4e3e0"
+    },
+    {
+      "source_name": "2026-10-14_11-20-30_BOOT DEVICE.htm",
+      "source_bytes": 2970,
+      "source_sha256": "e432c0dc6cabfcfc541aaa53b068dcaa4f8763b51783ee5e1c0eea449a3634bc",
+      "export_path": "evidence/unlocktool/2026-10-14_11-20-30_BOOT DEVICE.txt",
+      "export_bytes": 792,
+      "export_sha256": "65d8b6f3f0d0b9d03f5e373754b59572fd1151f70395dfda7d0ea3102db4e3e0"
+    },
+    {
+      "source_name": "init_boot.img",
+      "source_bytes": 8388608,
+      "source_sha256": "f61c74bab1781862e48f8abc4a8b7865f0ba661658a3807431395edc1ce069c8",
+      "export_path": null
+    },
+    {
+      "source_name": "init_boot_antes_da_gravacao.img",
+      "source_bytes": 8388608,
+      "source_sha256": "f50885fc4354236e230d7d92d281300c903203fc91e6d67b5231c2568b2b11f4",
+      "export_path": null
+    },
+    {
+      "source_name": "init_boot_pos_original_word.img",
+      "source_bytes": 8388608,
+      "source_sha256": "9d4e7d3468d85994123b521139a15740f629921138abcb33aac6e23c26ca9ca5",
+      "export_path": null
+    },
+    {
+      "source_name": "init_boot_pos_patch_restore_20261014_115410.img",
+      "source_bytes": 8388608,
+      "source_sha256": "16012cc9fca0cdac21b40233d385071ab1d6a0649cc81480f73e86c3b9ac9e41",
+      "export_path": null
+    },
+    {
+      "source_name": "init_boot_restaurado_lido_do_celular.img",
+      "source_bytes": 8388608,
+      "source_sha256": "f61c74bab1781862e48f8abc4a8b7865f0ba661658a3807431395edc1ce069c8",
+      "export_path": null
+    },
+    {
+      "source_name": "vbmeta_atual.bin",
+      "source_bytes": 131072,
+      "source_sha256": "07382ae3f7a655b4598f9f82c34dd07a18ff21ee76b235676a3697e882a2e3b4",
+      "export_path": null
+    },
+    {
+      "source_name": "gpt_main0_antes_do_erase.bin",
+      "source_bytes": 20480,
+      "source_sha256": "70590d9277fc17c34272eb222b4ca561970ff176b860f0cd70aee5e328a986bf",
+      "export_path": null
+    },
+    {
+      "source_name": "gpt_main0_pre_patch_restore.bin",
+      "source_bytes": 20480,
+      "source_sha256": "64e4f30f751564c52a96a0523246d2dae044364f52c81c0d6798f4a44858e680",
+      "export_path": null
+    }
+  ]
+}

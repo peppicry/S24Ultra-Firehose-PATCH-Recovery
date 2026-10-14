@@ -1,0 +1,147 @@
+"""Restore the fixed original init_boot in eight bounded 1 MiB operations.
+
+Only the init_boot interval in the verified SM-S928B partition map is
+writable. No erase, GPT write, other partition write, loader upload or
+device reset is implemented. Confirm each block and the complete image.
+Serial flow control matches the EDL reference serial transport; USB ZLP
+support is negotiated as unavailable for this COM transport.
+"""
+import argparse
+import datetime
+import hashlib
+import json
+import time
+import xml.etree.ElementTree as ET
+
+from read_current_images import FirehoseReadTransport, OUT, WORKSPACE, parse_gpt
+from restore_init_boot_direct import STOCK_SHA256, ROOT_SHA256, IMAGE_SIZE, START, SECTORS
+
+BLOCK_SIZE=1048576
+BLOCK_SECTORS=256
+CONFIG={'MemoryName':'UFS','Verbose':'1','ZLPAwareHost':'0',
+        'SkipStorageInit':'0','SkipWrite':'0','MaxPayloadSizeToTargetInBytes':'16384'}
+PROGRAMS=[{'SECTOR_SIZE_IN_BYTES':'4096','num_partition_sectors':'256',
+           'physical_partition_number':'0','start_sector':str(START+i*BLOCK_SECTORS)}
+          for i in range(8)]
+
+class BoundedBlockWriter(FirehoseReadTransport):
+    def send(self,tag,attrs):
+        if tag in ('nop','read'):
+            return super().send(tag,attrs)
+        if not ((tag=='configure' and attrs==CONFIG) or
+                (tag=='program' and attrs in PROGRAMS)):
+            raise RuntimeError('Comando de escrita fora da lista fixa permitida')
+        root=ET.Element('data'); ET.SubElement(root,tag,attrs)
+        data=b'<?xml version="1.0" encoding="UTF-8" ?>'+ET.tostring(root)
+        self.events.append({'direction':'tx','xml':data.decode()})
+        if self.connection.write(data)!=len(data):
+            raise RuntimeError('Envio XML incompleto')
+
+def main():
+    parser=argparse.ArgumentParser(); parser.add_argument('--port',required=True)
+    args=parser.parse_args()
+    result={'started_at':datetime.datetime.now().astimezone().isoformat(),
+            'port':args.port,'operation':'restore_original_init_boot_in_eight_blocks',
+            'write_success_confirmed_by_readback':False,'blocks':[],
+            'write_timeout_seconds':30,'block_size':BLOCK_SIZE}
+    transport=None
+    try:
+        source=WORKSPACE/'outputs/s24-restaurar-init-boot/init_boot.img'
+        stock=source.read_bytes()
+        if len(stock)!=IMAGE_SIZE or hashlib.sha256(stock).hexdigest()!=STOCK_SHA256:
+            raise RuntimeError('Imagem original nao passou na verificacao fixa')
+        validation=json.loads((OUT/'pre_write_validation.json').read_text(encoding='utf-8'))
+        if not (validation['stock_sha256']==STOCK_SHA256 and
+                validation['current_root_vbmeta_sha256']==ROOT_SHA256 and
+                validation['original_matches_current_root'] and
+                validation['current_root_hash_valid'] and
+                validation['current_root_signature_valid_against_embedded_key']):
+            raise RuntimeError('Validacao AVB previa nao corresponde ao original fixo')
+        transport=BoundedBlockWriter(args.port)
+        transport.connection.write_timeout=30
+        transport.confirm_firehose()
+        gpt=transport.read_sectors(0,5,'gpt_main0_pre_fragmentado.bin')
+        partitions=parse_gpt(gpt)
+        if partitions.get('init_boot')!={'start_sector':START,'end_sector':START+SECTORS-1,'sector_count':SECTORS}:
+            raise RuntimeError('GPT atual diverge do intervalo fixo de init_boot')
+        if partitions.get('vbmeta')!={'start_sector':4244736,'end_sector':4244767,'sector_count':32}:
+            raise RuntimeError('GPT atual diverge do intervalo fixo de vbmeta')
+        root=transport.read_sectors(4244736,32,'vbmeta_atual.bin')
+        if hashlib.sha256(root).hexdigest()!=ROOT_SHA256:
+            raise RuntimeError('vbmeta atual diverge da validacao AVB')
+        before=transport.read_sectors(START,SECTORS,'init_boot_pre_fragmentado.img')
+        result['original_sha256']=STOCK_SHA256
+        result['before_sha256']=hashlib.sha256(before).hexdigest()
+        result['before_matches_previous_patched_image']=before==(WORKSPACE/'outputs/s24-initboot-audit/init_boot_antes_da_gravacao.img').read_bytes()
+        print(json.dumps({'stage':'preflight_complete','before_sha256':result['before_sha256']}),flush=True)
+        if before==stock:
+            result['status']='original_already_present_no_write_needed'
+            result['write_success_confirmed_by_readback']=True
+        else:
+            transport.send('configure',CONFIG)
+            response=transport.xml_response()
+            result['configure_response']=response
+            if response.get('value')!='ACK' or response.get('rawmode','false')!='false':
+                raise RuntimeError('CONFIGURE recusado: '+str(response))
+            payload=int(response.get('MaxPayloadSizeToTargetInBytes','16384'))
+            supported=int(response.get('MaxPayloadSizeToTargetInBytesSupported',str(payload)))
+            payload=min(payload,supported,16384)//4096*4096
+            if payload<4096:
+                raise RuntimeError('Limite de envio anunciado menor que um setor')
+            result['payload_bytes']=payload
+            for index,program in enumerate(PROGRAMS):
+                offset=index*BLOCK_SIZE
+                block=stock[offset:offset+BLOCK_SIZE]
+                if len(block)!=BLOCK_SIZE:
+                    raise RuntimeError('Tamanho inesperado de bloco')
+                block_result={'index':index+1,'start_sector':START+index*BLOCK_SECTORS,
+                              'sector_count':BLOCK_SECTORS,'image_bytes_sent':0}
+                result['blocks'].append(block_result)
+                print(json.dumps({'stage':'program_block','block':index+1}),flush=True)
+                transport.send('program',program)
+                initial=transport.xml_response()
+                block_result['initial_response']=initial
+                if initial.get('value')!='ACK' or initial.get('rawmode')!='true':
+                    raise RuntimeError('PROGRAM recusado antes de enviar o bloco: '+str(initial))
+                deadline=time.monotonic()+60
+                for pos in range(0,len(block),payload):
+                    chunk=block[pos:pos+payload]; sent=0
+                    while sent<len(chunk):
+                        if time.monotonic()>deadline:
+                            raise TimeoutError('Envio incompleto; modo raw incerto')
+                        count=transport.connection.write(chunk[sent:])
+                        if count<=0:
+                            raise RuntimeError('Envio do bloco interrompido')
+                        sent+=count; block_result['image_bytes_sent']+=count
+                final=transport.xml_response(timeout=15)
+                block_result['final_response']=final
+                if final.get('rawmode')!='false':
+                    raise RuntimeError('Bloco nao confirmou saida do modo raw; nenhuma nova consulta enviada')
+                readback=transport.read_sectors(START+index*BLOCK_SECTORS,BLOCK_SECTORS,
+                                                'init_boot_bloco_%02d_pos.img'%(index+1))
+                block_result['readback_sha256']=hashlib.sha256(readback).hexdigest()
+                block_result['readback_matches_original']=readback==block
+                if final.get('value')!='ACK' or readback!=block:
+                    raise RuntimeError('Bloco nao foi confirmado por ACK e leitura identica')
+                print(json.dumps({'stage':'block_verified','block':index+1}),flush=True)
+            complete=transport.read_sectors(START,SECTORS,'init_boot_apos_fragmentado.img')
+            result['readback_sha256']=hashlib.sha256(complete).hexdigest()
+            result['write_success_confirmed_by_readback']=complete==stock
+            if complete!=stock:
+                raise RuntimeError('Leitura final nao corresponde byte por byte ao original')
+            result['status']='original_restored_and_full_readback_verified'
+    except Exception as error:
+        result['status']='stopped'; result['error_type']=type(error).__name__; result['error']=str(error)
+    finally:
+        result['finished_at']=datetime.datetime.now().astimezone().isoformat()
+        if transport:
+            result['events']=transport.events; transport.close()
+        (OUT/'fragmented_write_result.json').write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
+        compact={k:v for k,v in result.items() if k!='events'}
+        if not result['write_success_confirmed_by_readback']:
+            compact['last_events']=result.get('events',[])[-10:]
+        print(json.dumps(compact,ensure_ascii=False,indent=2),flush=True)
+    return 0 if result['write_success_confirmed_by_readback'] else 1
+
+if __name__=='__main__':
+    raise SystemExit(main())

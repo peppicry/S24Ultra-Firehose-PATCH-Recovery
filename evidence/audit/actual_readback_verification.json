@@ -1,0 +1,54 @@
+{
+  "current_path": "<WORKSPACE>\\outputs\\leitura-init-boot-do-celular\\init_boot_0",
+  "current_sha256": "f50885fc4354236e230d7d92d281300c903203fc91e6d67b5231c2568b2b11f4",
+  "matches_previous_patched_image_byte_for_byte": true,
+  "matches_restoration_reference_byte_for_byte": false,
+  "different_sector_count_from_previous": 0,
+  "root_vbmeta_path": "<WORKSPACE>\\outputs\\leitura-init-boot-do-celular\\vbmeta_0",
+  "root_vbmeta_sha256": "07382ae3f7a655b4598f9f82c34dd07a18ff21ee76b235676a3697e882a2e3b4",
+  "root_vbmeta_hash_valid": true,
+  "root_vbmeta_signature_valid_against_embedded_key": true,
+  "root_vbmeta_flags": 0,
+  "checks": [
+    {
+      "partition": "boot",
+      "source": "earlier_readback",
+      "path": "<DOWNLOADS>\\boot_0",
+      "expected_digest": "b92c4a30b351490fe1648c54d3b9d16e29a1ff847b2101159a5e2b25125d2109",
+      "calculated_digest": "b92c4a30b351490fe1648c54d3b9d16e29a1ff847b2101159a5e2b25125d2109",
+      "matches_root_vbmeta_hash": true
+    },
+    {
+      "partition": "init_boot",
+      "source": "actual_readback",
+      "path": "<WORKSPACE>\\outputs\\leitura-init-boot-do-celular\\init_boot_0",
+      "expected_digest": "8eae2f7ac061f2e012b494fa0bf51c5827bb127572210f737b97ba328a1f3571",
+      "calculated_digest": "ee8badac71af5afe1753a79f513e4fb18a52fe2b99e7ba718b42ad6b3cd2fb85",
+      "matches_root_vbmeta_hash": false
+    },
+    {
+      "partition": "init_boot",
+      "source": "restoration_reference",
+      "path": "<WORKSPACE>\\outputs\\s24-restaurar-init-boot\\init_boot.img",
+      "expected_digest": "8eae2f7ac061f2e012b494fa0bf51c5827bb127572210f737b97ba328a1f3571",
+      "calculated_digest": "8eae2f7ac061f2e012b494fa0bf51c5827bb127572210f737b97ba328a1f3571",
+      "matches_root_vbmeta_hash": true
+    },
+    {
+      "partition": "recovery",
+      "source": "earlier_readback",
+      "path": "<DOWNLOADS>\\recovery_0",
+      "expected_digest": "a5c1e01b4ec39c3e1f30ac0a286f2215564d48ad639b59eacda4f67690a3837a",
+      "calculated_digest": "a5c1e01b4ec39c3e1f30ac0a286f2215564d48ad639b59eacda4f67690a3837a",
+      "matches_root_vbmeta_hash": true
+    },
+    {
+      "partition": "vendor_boot",
+      "source": "earlier_readback",
+      "path": "<DOWNLOADS>\\vendor_boot_0",
+      "expected_digest": "75069c39ece2958c4e715c43d55a05ee14c195a442365a79994a44e8b3d67571",
+      "calculated_digest": "75069c39ece2958c4e715c43d55a05ee14c195a442365a79994a44e8b3d67571",
+      "matches_root_vbmeta_hash": true
+    }
+  ]
+}

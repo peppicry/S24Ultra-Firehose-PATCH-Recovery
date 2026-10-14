@@ -1,0 +1,179 @@
+"""Read only GPT, init_boot and vbmeta through the already loaded Firehose."""
+import argparse
+import datetime
+import hashlib
+import json
+import pathlib
+import struct
+import sys
+import time
+import xml.etree.ElementTree as ET
+import zlib
+
+import serial
+import serial.tools.list_ports
+
+OUT = pathlib.Path(__file__).resolve().parent
+WORKSPACE = OUT.parent.parent
+
+class FirehoseReadTransport:
+    def __init__(self, port):
+        devices = [p for p in serial.tools.list_ports.comports()
+                   if p.device.upper() == port.upper() and
+                   p.vid == 0x05C6 and p.pid == 0x9008]
+        if len(devices) != 1:
+            raise RuntimeError('Porta indicada nao identificada como Qualcomm 9008')
+        self.connection = serial.Serial(port=None, baudrate=115200,
+                                        timeout=0.2, write_timeout=2,
+                                        xonxoff=False, rtscts=True, dsrdtr=True)
+        self.connection.port = devices[0].device
+        self.connection._reset_input_buffer = lambda: None
+        self.connection.open()
+        self.buffer = bytearray()
+        self.events = []
+
+    def close(self):
+        self.connection.close()
+
+    def send(self, tag, attrs):
+        if tag not in ('nop', 'read'):
+            raise RuntimeError('Este cliente permite somente NOP e READ')
+        root = ET.Element('data')
+        ET.SubElement(root, tag, {k: str(v) for k, v in attrs.items()})
+        data = b'<?xml version="1.0" encoding="UTF-8" ?>' + ET.tostring(root)
+        self.events.append({'direction':'tx', 'xml': data.decode('utf-8')})
+        if self.connection.write(data) != len(data):
+            raise RuntimeError('Envio XML incompleto')
+
+    def xml_response(self, timeout=10):
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            end = self.buffer.find(b'</data>')
+            if end >= 0:
+                packet = bytes(self.buffer[:end+7])
+                del self.buffer[:end+7]
+                self.events.append({'direction':'rx', 'xml':packet.decode('utf-8','replace')})
+                root = ET.fromstring(packet.strip())
+                for node in root.iter('response'):
+                    return dict(node.attrib)
+                continue
+            if len(self.buffer) > 65536:
+                raise RuntimeError('Resposta XML excedeu o limite; interrompendo')
+            self.buffer.extend(self.connection.read(4096))
+        raise TimeoutError('Nao recebeu resposta XML completa')
+
+    def confirm_firehose(self):
+        self.send('nop', {})
+        response = self.xml_response()
+        if response.get('value') != 'ACK' or response.get('rawmode') != 'false':
+            raise RuntimeError('NOP nao confirmou Firehose fora do modo de dados')
+
+    def read_sectors(self, start, count, filename):
+        permitted = {(0,5), (188944,2048)}
+        permitted.update((188944+i*256,256) for i in range(8))
+        permitted.update((188944+i,1) for i in range(2048))
+        if filename != 'vbmeta_atual.bin' and (start,count) not in permitted:
+            raise RuntimeError('Leitura fora dos intervalos explicitamente previstos')
+        self.send('read', {'SECTOR_SIZE_IN_BYTES':4096,
+                          'num_partition_sectors':count,
+                          'physical_partition_number':0,
+                          'start_sector':start})
+        response = self.xml_response()
+        if response.get('value') != 'ACK' or response.get('rawmode') != 'true':
+            raise RuntimeError('READ recusado ou sem modo de dados: ' + str(response))
+        total = count*4096
+        data = bytearray()
+        deadline = time.monotonic() + 40
+        while len(data) < total and time.monotonic() < deadline:
+            remaining = total-len(data)
+            if self.buffer:
+                take = min(remaining,len(self.buffer))
+                data.extend(self.buffer[:take]); del self.buffer[:take]
+            else:
+                data.extend(self.connection.read(min(remaining,65536)))
+        if len(data) != total:
+            (OUT/(filename+'.partial')).write_bytes(data)
+            raise TimeoutError('READ incompleto; nao enviar mais comandos nesta sessao')
+        response = self.xml_response()
+        if response.get('value') != 'ACK' or response.get('rawmode') != 'false':
+            (OUT/(filename+'.unconfirmed')).write_bytes(data)
+            raise RuntimeError('READ sem confirmacao final: ' + str(response))
+        path = OUT/filename
+        path.write_bytes(data)
+        self.events.append({'read_saved':str(path),'bytes':len(data),
+                            'sha256':hashlib.sha256(data).hexdigest()})
+        return bytes(data)
+
+def parse_gpt(data):
+    if data[4096:4104] != b'EFI PART':
+        raise RuntimeError('GPT principal atual sem assinatura EFI PART')
+    size, crc = struct.unpack_from('<II',data,4108)
+    if not 92 <= size <= 4096:
+        raise RuntimeError('Tamanho do cabecalho GPT invalido')
+    header = bytearray(data[4096:4096+size]); header[16:20]=bytes(4)
+    if zlib.crc32(header)&0xffffffff != crc:
+        raise RuntimeError('CRC do cabecalho GPT invalido')
+    lba = struct.unpack_from('<Q',data,4168)[0]
+    count, entry_size, crc = struct.unpack_from('<III',data,4176)
+    entries = data[lba*4096:lba*4096+count*entry_size]
+    if len(entries) != count*entry_size or zlib.crc32(entries)&0xffffffff != crc:
+        raise RuntimeError('CRC ou tamanho da matriz GPT invalido')
+    result={}
+    for i in range(count):
+        entry=entries[i*entry_size:(i+1)*entry_size]
+        name=entry[56:128].decode('utf-16le').rstrip('\0')
+        if name:
+            first,last=struct.unpack_from('<QQ',entry,32)
+            result[name]={'start_sector':first,'end_sector':last,'sector_count':last-first+1}
+    return result
+
+def main():
+    parser=argparse.ArgumentParser()
+    parser.add_argument('--port',required=True)
+    args=parser.parse_args()
+    result={'observed_at':datetime.datetime.now().astimezone().isoformat(),
+            'port':args.port,'operation':'read_only_current_partition_verification'}
+    transport=None
+    try:
+        transport=FirehoseReadTransport(args.port)
+        transport.confirm_firehose()
+        gpt=transport.read_sectors(0,5,'gpt_main0_atual.bin')
+        partition_map=parse_gpt(gpt)
+        backup=(WORKSPACE/'outputs/backup-gpt-lun0-antes-do-erase/gpt_main0_antes_do_erase.bin').read_bytes()
+        result['gpt_matches_preserved_backup_byte_for_byte']=gpt==backup
+        result['gpt_crc_valid']=True
+        expected={'start_sector':188944,'end_sector':190991,'sector_count':2048}
+        if partition_map.get('init_boot') != expected:
+            raise RuntimeError('Endereco atual de init_boot diverge do mapa previamente verificado')
+        result['init_boot_partition']=expected
+        vbmeta=partition_map.get('vbmeta')
+        if not vbmeta or vbmeta['sector_count'] != 32:
+            raise RuntimeError('Particao vbmeta atual ausente ou com tamanho inesperado')
+        result['vbmeta_partition']=vbmeta
+        current=transport.read_sectors(188944,2048,'init_boot_atual.img')
+        root=transport.read_sectors(vbmeta['start_sector'],32,'vbmeta_atual.bin')
+        stock=(WORKSPACE/'outputs/s24-restaurar-init-boot/init_boot.img').read_bytes()
+        before=(WORKSPACE/'outputs/s24-initboot-audit/init_boot_antes_da_gravacao.img').read_bytes()
+        result['init_boot_sha256']=hashlib.sha256(current).hexdigest()
+        result['init_boot_matches_previous_patched_image']=current==before
+        result['init_boot_matches_restoration_reference']=current==stock
+        result['vbmeta_sha256']=hashlib.sha256(root).hexdigest()
+        result['status']='all_requested_reads_confirmed'
+    except Exception as error:
+        result['status']='stopped'
+        result['error_type']=type(error).__name__
+        result['error']=str(error)
+    finally:
+        if transport:
+            result['transport_backend']=getattr(transport.connection,'transport_backend','serial_com')
+            result['events']=transport.events
+            transport.close()
+        (OUT/'current_read_result.json').write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
+        compact={k:v for k,v in result.items() if k!='events'}
+        if result['status']=='stopped':
+            compact['last_events']=result.get('events',[])[-8:]
+        print(json.dumps(compact,ensure_ascii=False,indent=2))
+    return 0 if result['status']=='all_requested_reads_confirmed' else 1
+
+if __name__=='__main__':
+    raise SystemExit(main())

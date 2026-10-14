@@ -1,0 +1,139 @@
+{
+  "footer": null,
+  "algorithm_type": 2,
+  "algorithm": "SHA256_RSA4096",
+  "flags": 0,
+  "rollback_index": 0,
+  "rollback_index_location": 0,
+  "release_string": "avbtool 1.4.0",
+  "public_key_sha256": "15f66990b32b613508fa9979a5fc70aa37cb3c3d6043e82a998765716d6f5abd",
+  "descriptors": [
+    {
+      "tag": 4,
+      "size": 1128,
+      "rollback_index_location": 1,
+      "partition": "dtbo",
+      "public_key_sha256": "15f66990b32b613508fa9979a5fc70aa37cb3c3d6043e82a998765716d6f5abd"
+    },
+    {
+      "tag": 4,
+      "size": 1136,
+      "rollback_index_location": 3,
+      "partition": "optics",
+      "public_key_sha256": "15f66990b32b613508fa9979a5fc70aa37cb3c3d6043e82a998765716d6f5abd"
+    },
+    {
+      "tag": 4,
+      "size": 1136,
+      "rollback_index_location": 2,
+      "partition": "prism",
+      "public_key_sha256": "15f66990b32b613508fa9979a5fc70aa37cb3c3d6043e82a998765716d6f5abd"
+    },
+    {
+      "tag": 0,
+      "size": 72,
+      "key": "com.android.build.boot.os_version",
+      "value": "14"
+    },
+    {
+      "tag": 0,
+      "size": 88,
+      "key": "com.android.build.boot.security_patch",
+      "value": "2026-08-05"
+    },
+    {
+      "tag": 0,
+      "size": 72,
+      "key": "com.android.build.system.os_version",
+      "value": "17"
+    },
+    {
+      "tag": 0,
+      "size": 88,
+      "key": "com.android.build.system.security_patch",
+      "value": "2026-08-05"
+    },
+    {
+      "tag": 0,
+      "size": 72,
+      "key": "com.android.build.vendor.os_version",
+      "value": "14"
+    },
+    {
+      "tag": 0,
+      "size": 88,
+      "key": "com.android.build.vendor.security_patch",
+      "value": "2026-08-05"
+    },
+    {
+      "tag": 2,
+      "size": 200,
+      "partition": "boot",
+      "image_size": 38146576,
+      "hash_algorithm": "sha256",
+      "salt": "74d6312ead2ce02d9154c0247f39f96c43a634cf1d87f04bc9f77798e7cbc280",
+      "expected_digest": "b92c4a30b351490fe1648c54d3b9d16e29a1ff847b2101159a5e2b25125d2109",
+      "flags": 0
+    },
+    {
+      "tag": 2,
+      "size": 208,
+      "partition": "init_boot",
+      "image_size": 1724928,
+      "hash_algorithm": "sha256",
+      "salt": "d7282f8f62d3c7fbc5a98842158e86e177017a5d7bb4309e3f4eed01ee634162",
+      "expected_digest": "8eae2f7ac061f2e012b494fa0bf51c5827bb127572210f737b97ba328a1f3571",
+      "flags": 0
+    },
+    {
+      "tag": 2,
+      "size": 208,
+      "partition": "recovery",
+      "image_size": 85336592,
+      "hash_algorithm": "sha256",
+      "salt": "0fcd56fbc900fd6d9cf083bde749aca600ad6fb072d6c002b5affa5a1e42a720",
+      "expected_digest": "a5c1e01b4ec39c3e1f30ac0a286f2215564d48ad639b59eacda4f67690a3837a",
+      "flags": 0
+    },
+    {
+      "tag": 2,
+      "size": 208,
+      "partition": "vendor_boot",
+      "image_size": 24175104,
+      "hash_algorithm": "sha256",
+      "salt": "86c8763eb42c3e02eca64406da711bc7bbbda4c71a07449530eae4f1bd2a631c",
+      "expected_digest": "75069c39ece2958c4e715c43d55a05ee14c195a442365a79994a44e8b3d67571",
+      "flags": 0
+    },
+    {
+      "tag": 1,
+      "size": 248
+    },
+    {
+      "tag": 1,
+      "size": 256
+    },
+    {
+      "tag": 1,
+      "size": 256
+    },
+    {
+      "tag": 1,
+      "size": 256
+    },
+    {
+      "tag": 1,
+      "size": 256
+    },
+    {
+      "tag": 1,
+      "size": 256
+    },
+    {
+      "tag": 1,
+      "size": 256
+    }
+  ],
+  "vbmeta_hash_matches": true,
+  "signature_valid_against_embedded_key": true
+}

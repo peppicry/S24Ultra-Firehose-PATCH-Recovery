@@ -1,0 +1,49 @@
+"""Verify the actual READ output against the signed root vbmeta descriptors."""
+import hashlib
+import json
+import audit_init_boot as audit
+
+read_dir = audit.OUT.parent/'leitura-init-boot-do-celular'
+stock_path = audit.OUT.parent/'s24-restaurar-init-boot'/'init_boot.img'
+current_path = read_dir/'init_boot_0'
+root_path = read_dir/'vbmeta_0'
+stock, current = stock_path.read_bytes(), current_path.read_bytes()
+root = audit.parse_avb(root_path.read_bytes())
+before = (audit.OUT/'init_boot_antes_da_gravacao.img').read_bytes()
+checks = []
+for descriptor in root['descriptors']:
+    if descriptor['tag'] != 2:
+        continue
+    name = descriptor['partition']
+    candidates = [('actual_readback', current_path), ('restoration_reference', stock_path)] if name == 'init_boot' else [('earlier_readback',audit.ROOT/(name+'_0'))]
+    for source, path in candidates:
+        if not path.is_file():
+            continue
+        data = path.read_bytes()
+        image_size = descriptor['image_size']
+        assert image_size <= len(data)
+        digest = hashlib.new(descriptor['hash_algorithm'])
+        digest.update(bytes.fromhex(descriptor['salt']))
+        digest.update(memoryview(data)[:image_size])
+        checks.append({'partition':name,'source':source,'path':str(path),
+                       'expected_digest':descriptor['expected_digest'],
+                       'calculated_digest':digest.hexdigest(),
+                       'matches_root_vbmeta_hash':digest.hexdigest()==descriptor['expected_digest']})
+result = {
+    'current_path':str(current_path),'current_sha256':audit.sha256(current),
+    'matches_previous_patched_image_byte_for_byte':current==before,
+    'matches_restoration_reference_byte_for_byte':current==stock,
+    'different_sector_count_from_previous':sum(current[p:p+4096]!=before[p:p+4096] for p in range(0,len(current),4096)),
+    'root_vbmeta_path':str(root_path),'root_vbmeta_sha256':audit.sha256(root_path.read_bytes()),
+    'root_vbmeta_hash_valid':root['vbmeta_hash_matches'],
+    'root_vbmeta_signature_valid_against_embedded_key':root['signature_valid_against_embedded_key'],
+    'root_vbmeta_flags':root['flags'],'checks':checks,
+}
+assert result['matches_previous_patched_image_byte_for_byte']
+assert not result['matches_restoration_reference_byte_for_byte']
+assert result['root_vbmeta_hash_valid'] and result['root_vbmeta_signature_valid_against_embedded_key']
+assert next(c for c in checks if c['source']=='restoration_reference')['matches_root_vbmeta_hash']
+assert not next(c for c in checks if c['source']=='actual_readback')['matches_root_vbmeta_hash']
+(audit.OUT/'actual_readback_verification.json').write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
+(audit.OUT/'root_vbmeta_actual_read.json').write_text(json.dumps(root,ensure_ascii=False,indent=2),encoding='utf-8')
+print(json.dumps(result,ensure_ascii=False,indent=2))

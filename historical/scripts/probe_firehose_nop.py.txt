@@ -1,0 +1,92 @@
+"""Send only Firehose NOP to a verified Qualcomm 9008 serial port."""
+import argparse
+import datetime
+import json
+import pathlib
+import re
+import struct
+import time
+import xml.etree.ElementTree as ET
+
+import serial
+import serial.tools.list_ports
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--port', required=True)
+args = parser.parse_args()
+out_dir = pathlib.Path(__file__).resolve().parent
+result = {'observed_at': datetime.datetime.now().astimezone().isoformat(),
+          'port': args.port, 'operation': 'firehose_nop_only',
+          'protocol_commands_sent': [], 'flash_mutation_commands_sent': []}
+
+def parse_responses(data):
+    values = []
+    for packet in re.findall(rb'<data\b[^>]*>.*?</data>', data, re.S):
+        try:
+            root = ET.fromstring(packet)
+            values.extend(dict(node.attrib) for node in root.iter('response'))
+        except ET.ParseError:
+            continue
+    return values
+
+def is_sahara(data):
+    return len(data) >= 8 and struct.unpack_from('<II', data)[0] in (1, 4, 13, 14)
+
+ports = [p for p in serial.tools.list_ports.comports()
+         if p.device.upper() == args.port.upper() and
+         p.vid == 0x05C6 and p.pid == 0x9008]
+if len(ports) != 1:
+    result['status'] = 'specified_port_is_not_a_verified_qualcomm_9008_device'
+else:
+    received = bytearray()
+    try:
+        connection = serial.Serial(port=None, baudrate=115200, timeout=0.2,
+                                   write_timeout=2, xonxoff=False,
+                                   rtscts=False, dsrdtr=False)
+        connection.port = ports[0].device
+        connection._reset_input_buffer = lambda: None
+        connection.open()
+        try:
+            initial_deadline = time.monotonic() + 0.5
+            while time.monotonic() < initial_deadline and len(received) < 65536:
+                received.extend(connection.read(min(1024, 65536-len(received))))
+            result['initial_received_hex'] = received.hex()
+            if received and not (b'<?xml' in received or b'<data' in received):
+                result['status'] = 'sahara_or_other_initial_data_no_query_sent'
+            else:
+                query = b'<?xml version="1.0" encoding="UTF-8" ?><data><nop /></data>'
+                sent = connection.write(query)
+                result['protocol_commands_sent'].append('nop')
+                result['nop_bytes_sent'] = sent
+                if sent != len(query):
+                    raise RuntimeError('Incomplete NOP transmission')
+                received = bytearray()
+                deadline = time.monotonic() + 8
+                while time.monotonic() < deadline and len(received) < 65536:
+                    received.extend(connection.read(min(1024, 65536-len(received))))
+                    if parse_responses(received) or is_sahara(received):
+                        break
+                responses = parse_responses(received)
+                result['responses'] = responses
+                if any(r.get('value') == 'ACK' for r in responses):
+                    result['status'] = 'firehose_acknowledged_nop'
+                elif responses:
+                    result['status'] = 'firehose_response_without_ack'
+                elif is_sahara(received):
+                    result['status'] = 'sahara_response_to_query'
+                else:
+                    result['status'] = 'no_firehose_response_mode_unconfirmed'
+            result['received_size'] = len(received)
+            result['received_hex'] = received.hex()
+            if b'<data' in received:
+                result['received_text'] = received.decode('utf-8', 'replace')
+        finally:
+            connection.close()
+    except Exception as error:
+        result['status'] = 'probe_failed'
+        result['error_type'] = type(error).__name__
+        result['error'] = str(error)
+
+(out_dir / 'firehose_nop_result.json').write_text(
+    json.dumps(result, ensure_ascii=False, indent=2), encoding='utf-8')
+print(json.dumps(result, ensure_ascii=False, indent=2))

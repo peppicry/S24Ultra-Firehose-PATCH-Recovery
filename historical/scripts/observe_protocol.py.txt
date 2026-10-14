@@ -1,0 +1,65 @@
+"""Observe a single Qualcomm 9008 port without sending protocol commands."""
+import datetime
+import json
+import pathlib
+import struct
+import time
+
+import serial
+import serial.tools.list_ports
+
+out_dir = pathlib.Path(__file__).resolve().parent
+ports = [p for p in serial.tools.list_ports.comports()
+         if p.vid == 0x05C6 and p.pid == 0x9008]
+result = {
+    'observed_at': datetime.datetime.now().astimezone().isoformat(),
+    'operation': 'passive_serial_observation_no_protocol_transmission',
+    'matching_ports': [p.device for p in ports],
+}
+if len(ports) != 1:
+    result['status'] = 'requires_exactly_one_matching_device'
+else:
+    result['port'] = ports[0].device
+    captured = bytearray()
+    try:
+        connection = serial.Serial(port=None, baudrate=115200,
+                                   timeout=0.2, write_timeout=1,
+                                   xonxoff=False, rtscts=False, dsrdtr=False)
+        connection.port = ports[0].device
+        # Preserve any protocol data already queued by the Qualcomm driver.
+        connection._reset_input_buffer = lambda: None
+        connection.open()
+        try:
+            end = time.monotonic() + 4
+            while time.monotonic() < end and len(captured) < 8192:
+                captured.extend(connection.read(min(512, 8192 - len(captured))))
+        finally:
+            connection.close()
+        result['received_size'] = len(captured)
+        result['received_hex'] = captured.hex()
+        if len(captured) >= 8:
+            command, size = struct.unpack_from('<II', captured)
+            if command == 1 and size == 48 and len(captured) >= 48:
+                fields = struct.unpack_from('<12I', captured)
+                result['status'] = 'sahara_hello_observed'
+                result['sahara'] = {'version': fields[2],
+                                    'minimum_version': fields[3],
+                                    'max_packet_size': fields[4],
+                                    'mode': fields[5]}
+            elif b'<?xml' in captured or b'<data' in captured:
+                result['status'] = 'xml_observed_requires_interpretation'
+                result['received_text'] = captured.decode('utf-8', 'replace')
+            else:
+                result['status'] = 'other_data_observed'
+        elif not captured:
+            result['status'] = 'no_unsolicited_data_mode_unconfirmed'
+        else:
+            result['status'] = 'incomplete_data_observed'
+    except Exception as error:
+        result['status'] = 'serial_observation_failed'
+        result['error_type'] = type(error).__name__
+        result['error'] = str(error)
+
+output = out_dir / 'passive_observation.json'
+output.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding='utf-8')
+print(json.dumps(result, ensure_ascii=False, indent=2))

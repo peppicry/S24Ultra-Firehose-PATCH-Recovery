@@ -1,0 +1,33 @@
+{"at": "2026-10-14T11:01:51.745686+02:00", "stage": "initializing_usbdk_backend"}
+[timestamp] [threadID] facility level [function call] <message>
+--------------------------------------------------------------------------------
+[ 0.000047] [HOST_THREAD] libusb: debug [libusb_init_context] libusb v1.0.30.12037
+[ 0.000066] [HOST_THREAD] libusb: debug [usbi_add_event_source] add HANDLE <HOST_HANDLE> events 0
+[ 0.000080] [HOST_THREAD] libusb: debug [usbi_io_init] using timer for timeouts
+[ 0.000565] [HOST_THREAD] libusb: debug [usbi_add_event_source] add HANDLE <HOST_HANDLE> events 0
+[ 0.000600] [HOST_THREAD] libusb: debug [get_windows_version] Windows 11 64-bit
+[ 0.000610] [HOST_THREAD] libusb: debug [htab_create] using 1021 entries hash table
+[ 0.001267] [HOST_THREAD] libusb: info [winusbx_init] WinUSB DLL available (with isoch support)
+[ 0.001414] [HOST_THREAD] libusb: info [winusbx_init] libusbK DLL is not available
+[ 0.005591] [HOST_THREAD] libusb: debug [windows_init] UsbDk backend is available
+[ 0.005705] [HOST_THREAD] libusb: debug [libusb_init_context] installing new context as implicit default
+[ 0.005808] [HOST_THREAD] libusb: debug [windows_set_option] switching context <HOST_CONTEXT> to use UsbDk backend
+[ 0.005908] [HOST_THREAD] libusb: debug [libusb_get_device_list]  
+[ 0.006020] [HOST_THREAD] libusb: debug [windows_iocp_thread] I/O completion thread started
+[ 0.006199] [HOST_THREAD] libusb: debug [libusb_get_device_descriptor]  
+[ 0.006544] [HOST_THREAD] libusb: debug [libusb_get_device_descriptor]  
+[ 0.006681] [HOST_THREAD] libusb: debug [libusb_unref_device] destroy device 2.4
+[ 0.006720] [HOST_THREAD] libusb: debug [libusb_unref_device] destroy device 2.5
+{
+  "observed_at": "2026-10-14T11:01:51.745686+02:00",
+  "port": "COM20",
+  "operation": "read_only_current_partition_verification",
+  "status": "stopped",
+  "error_type": "RuntimeError",
+  "error": "Precisa haver exatamente um dispositivo Qualcomm 9008",
+  "last_events": []
+}
+[ 0.008325] [HOST_THREAD] libusb: debug [libusb_exit]  
+[ 0.008373] [HOST_THREAD] libusb: debug [windows_iocp_thread] I/O completion thread exiting
+[ 0.009106] [HOST_THREAD] libusb: debug [usbi_remove_event_source] remove HANDLE <HOST_HANDLE>
+[ 0.009137] [HOST_THREAD] libusb: debug [usbi_remove_event_source] remove HANDLE <HOST_HANDLE>

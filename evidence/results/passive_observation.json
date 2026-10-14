@@ -1,0 +1,10 @@
+{
+  "observed_at": "2026-10-14T10:36:18.515431+02:00",
+  "operation": "passive_serial_observation_no_protocol_transmission",
+  "matching_ports": [
+    "COM20"
+  ],
+  "port": "COM20",
+  "received_size": 0,
+  "status": "no_unsolicited_data_mode_unconfirmed"
+}

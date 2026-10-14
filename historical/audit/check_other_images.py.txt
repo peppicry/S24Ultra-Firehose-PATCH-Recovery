@@ -1,0 +1,46 @@
+"""Inspect read-back boot-related image hashes, without device access."""
+import hashlib
+import json
+import audit_init_boot as audit
+
+names = ['boot', 'recovery', 'vendor_boot', 'pvmfw', 'vm-bootsys', 'vbmeta_system']
+reports = []
+for name in names:
+    path = audit.ROOT / (name + '_0')
+    if not path.is_file():
+        reports.append({'partition': name, 'status': 'missing'})
+        continue
+    data = path.read_bytes()
+    result = {'partition': name, 'path': str(path), 'size': len(data), 'sha256': audit.sha256(data)}
+    try:
+        avb = audit.parse_avb(data)
+        verified_hashes = []
+        for descriptor in avb.get('descriptors', []):
+            if descriptor['tag'] == 2 and descriptor.get('partition') == name:
+                size = descriptor['image_size']
+                if size > len(data):
+                    raise ValueError('AVB image size exceeds file size')
+                h = hashlib.new(descriptor['hash_algorithm'])
+                h.update(bytes.fromhex(descriptor['salt']))
+                h.update(memoryview(data)[:size])
+                descriptor['calculated_digest'] = h.hexdigest()
+                descriptor['image_hash_matches'] = h.hexdigest() == descriptor['expected_digest']
+                verified_hashes.append(descriptor['image_hash_matches'])
+        result['avb'] = avb
+        result['public_key_matches_init_boot_reference'] = avb.get('public_key_sha256') == '15f66990b32b613508fa9979a5fc70aa37cb3c3d6043e82a998765716d6f5abd'
+        result['content_hash_verified'] = bool(verified_hashes) and all(verified_hashes)
+        if verified_hashes:
+            result['status'] = 'content_hash_matches' if all(verified_hashes) else 'content_hash_mismatch'
+        elif name == 'vbmeta_system' and avb.get('signature_valid_against_embedded_key'):
+            result['status'] = 'metadata_signature_valid_content_not_checked'
+        else:
+            result['status'] = 'content_not_checked'
+    except Exception as error:
+        result['status'] = 'inspection_error'
+        result['error'] = str(error)
+    reports.append(result)
+    print(json.dumps({k:v for k,v in result.items() if k != 'avb'} | {
+        'signature_valid_against_embedded_key': result.get('avb',{}).get('signature_valid_against_embedded_key'),
+        'vbmeta_flags': result.get('avb',{}).get('flags'),
+        'descriptors': result.get('avb',{}).get('descriptors')}, ensure_ascii=False), flush=True)
+(audit.OUT/'other_images.json').write_text(json.dumps(reports,ensure_ascii=False,indent=2),encoding='utf-8')

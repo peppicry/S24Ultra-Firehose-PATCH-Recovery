@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='utf-8'?>
+<data>
+  <!--Somente init_boot original. Endereco e tamanho confirmados na GPT lida do celular.-->
+  <program SECTOR_SIZE_IN_BYTES="4096" file_sector_offset="0" filename="init_boot.img" label="init_boot" num_partition_sectors="2048" partofsingleimage="false" physical_partition_number="0" readbackverify="false" size_in_KB="8192" sparse="false" start_byte_hex="0x2e210000" start_sector="188944" />
+</data>

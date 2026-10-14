@@ -1,0 +1,21 @@
+{
+  "offline_only": true,
+  "word_count": 277635,
+  "modified_sector_count": 546,
+  "result_sha256": "f61c74bab1781862e48f8abc4a8b7865f0ba661658a3807431395edc1ce069c8",
+  "result_byte_identical_to_original": true,
+  "first_word": {
+    "image_offset": 8,
+    "start_sector": 188944,
+    "byte_offset": 8,
+    "size_in_bytes": 8,
+    "value": 7373724407824384
+  },
+  "last_word": {
+    "image_offset": 8388568,
+    "start_sector": 190991,
+    "byte_offset": 4056,
+    "size_in_bytes": 8,
+    "value": 6298112
+  }
+}

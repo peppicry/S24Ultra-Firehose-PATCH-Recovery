@@ -1,0 +1,42 @@
+{
+  "archived_evidence": {
+    "sanitized_exports_verified": 50,
+    "recorded_total_original_words": 277635,
+    "recorded_full_restoration": true,
+    "recorded_android_boot": "owner_report_not_independent_screen_capture",
+    "verification_level": "archived_records_only_not_binary_reverification"
+  },
+  "local_images": {
+    "verification_level": "local_original_binary_inputs",
+    "image_bytes": 8388608,
+    "original_sha256": "f61c74bab1781862e48f8abc4a8b7865f0ba661658a3807431395edc1ce069c8",
+    "patched_sha256": "f50885fc4354236e230d7d92d281300c903203fc91e6d67b5231c2568b2b11f4",
+    "readback_sha256": "f61c74bab1781862e48f8abc4a8b7865f0ba661658a3807431395edc1ce069c8",
+    "readback_byte_identical_to_original": true,
+    "full_plan_original_words": 277635,
+    "original_matches_recorded_root_descriptor": {
+      "calculated_digest": "8eae2f7ac061f2e012b494fa0bf51c5827bb127572210f737b97ba328a1f3571",
+      "matches": true
+    },
+    "patched_matches_recorded_root_descriptor": {
+      "calculated_digest": "ee8badac71af5afe1753a79f513e4fb18a52fe2b99e7ba718b42ad6b3cd2fb85",
+      "matches": false
+    },
+    "device_access": false,
+    "image_files_modified": false,
+    "actual_root_vbmeta": {
+      "sha256": "07382ae3f7a655b4598f9f82c34dd07a18ff21ee76b235676a3697e882a2e3b4",
+      "hash_valid": true,
+      "signature_valid_against_embedded_key": true,
+      "embedded_key_sha256": "15f66990b32b613508fa9979a5fc70aa37cb3c3d6043e82a998765716d6f5abd",
+      "flags": 0
+    },
+    "independent_samsung_key_authentication": false,
+    "gpt_header_and_entries_crc_valid": true,
+    "gpt_init_boot": {
+      "start_sector": 188944,
+      "end_sector": 190991,
+      "sector_count": 2048
+    }
+  }
+}

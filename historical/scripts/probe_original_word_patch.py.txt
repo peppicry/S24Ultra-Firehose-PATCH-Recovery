@@ -1,0 +1,104 @@
+"""Try only the original 8-byte header word at offset 8 in init_boot.
+
+Standard Firehose PATCH, fixed LUN/address/offset, original source hash pinned.
+Full current GPT/vbmeta/image verification before, full image read after.
+This is a bounded restoration test, not a full restoration.
+"""
+import argparse
+import datetime
+import hashlib
+import json
+import xml.etree.ElementTree as ET
+
+from read_current_images import FirehoseReadTransport, OUT, WORKSPACE, parse_gpt
+from restore_init_boot_direct import STOCK_SHA256, ROOT_SHA256, IMAGE_SIZE, START, SECTORS
+from probe_init_boot_patch import PATCHED_SHA256
+
+OFFSET=8
+
+class OriginalWordPatch(FirehoseReadTransport):
+    allowed_patch=None
+    def send(self, tag, attrs):
+        if tag in ('nop','read'):
+            return super().send(tag,attrs)
+        if tag!='patch' or self.allowed_patch is None or attrs!=self.allowed_patch:
+            raise RuntimeError('Only the fixed original init_boot header word is permitted')
+        root=ET.Element('data'); ET.SubElement(root,tag,attrs)
+        data=b'<?xml version="1.0" encoding="UTF-8" ?>'+ET.tostring(root)
+        self.events.append({'direction':'tx','xml':data.decode()})
+        if self.connection.write(data)!=len(data):
+            raise RuntimeError('Incomplete XML transmission')
+
+def main():
+    parser=argparse.ArgumentParser(); parser.add_argument('--port',required=True)
+    args=parser.parse_args()
+    result={'started_at':datetime.datetime.now().astimezone().isoformat(),
+            'port':args.port,'operation':'restore_only_original_init_boot_header_word',
+            'full_restoration_confirmed':False,'changed_data_write_permission_proven':False,
+            'target_image_offset':OFFSET,'target_bytes':8}
+    transport=None
+    try:
+        stock=(WORKSPACE/'outputs/s24-restaurar-init-boot/init_boot.img').read_bytes()
+        if len(stock)!=IMAGE_SIZE or hashlib.sha256(stock).hexdigest()!=STOCK_SHA256:
+            raise RuntimeError('Original image mismatch')
+        transport=OriginalWordPatch(args.port)
+        transport.confirm_firehose()
+        gpt=transport.read_sectors(0,5,'gpt_main0_pre_original_word.bin')
+        partitions=parse_gpt(gpt)
+        if partitions.get('init_boot')!={'start_sector':START,'end_sector':START+SECTORS-1,'sector_count':SECTORS}:
+            raise RuntimeError('init_boot bounds mismatch')
+        if partitions.get('vbmeta')!={'start_sector':4244736,'end_sector':4244767,'sector_count':32}:
+            raise RuntimeError('vbmeta bounds mismatch')
+        root=transport.read_sectors(4244736,32,'vbmeta_atual.bin')
+        if hashlib.sha256(root).hexdigest()!=ROOT_SHA256:
+            raise RuntimeError('Current vbmeta mismatch')
+        before=transport.read_sectors(START,SECTORS,'init_boot_pre_original_word.img')
+        result['before_sha256']=hashlib.sha256(before).hexdigest()
+        if before==stock:
+            result['status']='original_already_present_no_patch_needed'
+            result['full_restoration_confirmed']=True
+        else:
+            if result['before_sha256']!=PATCHED_SHA256:
+                raise RuntimeError('Image no longer matches the verified patched backup')
+            original_word=stock[OFFSET:OFFSET+8]
+            if before[OFFSET:OFFSET+8]==original_word:
+                raise RuntimeError('Selected word already original; test cannot prove changed-data writing')
+            expected=before[:OFFSET]+original_word+before[OFFSET+8:]
+            patch={'SECTOR_SIZE_IN_BYTES':'4096','byte_offset':str(OFFSET),
+                   'filename':'DISK','physical_partition_number':'0','size_in_bytes':'8',
+                   'start_sector':str(START),'value':str(int.from_bytes(original_word,'little'))}
+            transport.allowed_patch=patch
+            result['before_word_hex']=before[OFFSET:OFFSET+8].hex()
+            result['original_word_hex']=original_word.hex()
+            transport.send('patch',patch)
+            response=transport.xml_response(timeout=10)
+            result['patch_response']=response
+            if response.get('rawmode') not in (None,'false'):
+                raise RuntimeError('Unexpected raw state; no further commands sent')
+            after=transport.read_sectors(START,SECTORS,'init_boot_pos_original_word.img')
+            result['after_sha256']=hashlib.sha256(after).hexdigest()
+            result['after_word_hex']=after[OFFSET:OFFSET+8].hex()
+            result['full_image_unchanged']=after==before
+            result['only_expected_original_word_changed']=after==expected
+            result['changed_data_write_permission_proven']=response.get('value')=='ACK' and after==expected
+            if after==before:
+                result['status']='patch_has_no_observed_write_effect'
+            elif result['changed_data_write_permission_proven']:
+                result['status']='single_original_word_written_and_fully_verified'
+            else:
+                raise RuntimeError('Unexpected result; full readback saved and no more writes sent')
+    except Exception as error:
+        result['status']='stopped'; result['error_type']=type(error).__name__; result['error']=str(error)
+    finally:
+        if transport:
+            result['events']=transport.events; transport.close()
+        result['finished_at']=datetime.datetime.now().astimezone().isoformat()
+        (OUT/'original_word_patch_result.json').write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
+        compact={k:v for k,v in result.items() if k!='events'}
+        compact['patch_events']=[e for e in result.get('events',[]) if 'xml' in e and
+                any(s in e['xml'] for s in ('patch','deprecated','ERROR:'))]
+        print(json.dumps(compact,ensure_ascii=False,indent=2))
+    return 1 if result['status']=='stopped' else 0
+
+if __name__=='__main__':
+    raise SystemExit(main())

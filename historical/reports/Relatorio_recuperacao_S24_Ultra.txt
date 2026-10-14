@@ -1,0 +1,211 @@
+RECUPERAÇÃO DO SAMSUNG S24 ULTRA — ESTRATÉGIA E RESULTADO
+14/10/2026 · Horários em Europe/Berlin (UTC+02)
+
+O init_boot original foi restaurado por EDL usando o Firehose já carregado
+pelo UnlockTool. A leitura final de toda a partição ficou idêntica, byte por
+byte, ao arquivo original. Depois de reiniciar, o proprietário confirmou
+que o S24 abriu o Android. A recuperação foi feita com as ferramentas que
+já estavam disponíveis, sem aquisição de outro loader ou serviço.
+
+A diferença decisiva foi usar o comando Firehose PATCH, que permitiu
+restaurar palavras de oito bytes, em vez de insistir no comando PROGRAM,
+que recusava o endereço dessa partição.
+
+1. Identificar a alteração e conservar as referências
+
+O aparelho mostrava SECURE CHECK FAIL: init_boot(3) e só estava acessível em
+Qualcomm 9008/EDL. A imagem lida do próprio celular continha KernelSU:
+init substituído, init.real, kernelsu.ko, ksu_config e stock_image.sha1.
+O init.real preservava o init original, e o stock_image.sha1 correspondia
+ao SHA1 do arquivo original disponível no computador.
+
+Foram conservados a imagem modificada, o original, a GPT e os logs. Antes
+de interpretar uma comparação como prova de gravação, foi necessário
+confirmar que o arquivo comparado vinha de um READ real do celular.
+Uma cópia local do pacote original não comprova que o telefone o recebeu.
+
+A imagem original também correspondeu ao hash de init_boot esperado pelo
+vbmeta lido do aparelho. A imagem com KernelSU não correspondeu a esse hash.
+Isso sustentou a escolha do arquivo de restauração. A verificação interna
+AVB foi feita contra a chave embutida; não houve autenticação independente
+dessa chave como uma chave oficial Samsung.
+
+2. Confirmar o endereço pelo mapa do próprio aparelho
+
+Modelo: Samsung SM-S928B, S24 Ultra, perfil UnlockTool BIT-6.
+Build identificada: S928BXXU6ZZI4.
+Firehose carregado: Jun 10 2026 - 14:28:02.
+Porta usada na restauração: COM1, Qualcomm VID 05c6 / PID 9008.
+
+A GPT atual tinha cabeçalho e matriz de entradas válidos por CRC32.
+Os limites confirmados de init_boot eram:
+
+  LUN: 0
+  Tamanho do setor: 4096 bytes
+  Setor inicial: 188944
+  Setor final, inclusive: 190991
+  Quantidade: 2048 setores
+  Tamanho da partição: 8388608 bytes, ou 8 MiB
+
+Esses valores vieram da tabela desse aparelho. O cliente verificou os
+limites novamente antes de escrever. Eles não são uma receita universal
+para outros modelos, revisões ou tabelas de partições.
+
+3. Entender a falha de PROGRAM
+
+As tentativas de envio pelo UnlockTool chegavam a 100% e terminavam em FAIL.
+Tentativas de envio direto dos 8 MiB também pararam sem confirmação final.
+Leituras posteriores mostraram que o conteúdo permanecia modificado.
+
+O teste com uma operação PROGRAM menor, de 1 MiB, revelou o motivo explícito:
+
+  ERROR: Start sector 188944 not allowed for LUN 0 through EDL Flash
+  <response value="NAK" rawmode="false" />
+
+O Firehose enviava primeiro ACK/rawmode=true, mas depois recusava o endereço.
+Portanto, nem a barra em 100% nem aquele ACK inicial significavam que os
+bytes tinham sido persistidos. A recusa era do comando PROGRAM nesse
+endereço; ela não provava que todos os comandos de escrita eram bloqueados.
+
+Depois de respostas incompletas ou estado de transferência incerto, não
+foram enviados novos comandos nessa mesma sessão. A conexão só foi retomada
+após reinício físico, retorno ao EDL e novo BOOT DEVICE pelo proprietário.
+
+4. Procurar uma operação já disponível no mesmo Firehose
+
+A lista de funções anunciada pelo próprio Firehose incluía PATCH.
+Esse comando recebe um endereço, um deslocamento dentro do setor, um
+tamanho e um valor numérico. Foi criado um cliente limitado a init_boot,
+com valores extraídos somente da imagem original já verificada.
+
+Primeiro, foi enviado PATCH dos oito bytes ANDROID! no início da partição.
+Eles já eram iguais no original e no aparelho. Houve ACK, e a releitura
+completa confirmou que nenhum byte da imagem tinha mudado. Esse teste
+mostrou que o comando era aceito, mas ainda não provava escrita de dados
+diferentes.
+
+Em seguida, foi restaurada apenas a palavra de oito bytes no offset 8 do
+arquivo, que inclui o tamanho do ramdisk no cabeçalho. O valor foi retirado
+do original e codificado como inteiro sem sinal em little-endian.
+A releitura completa confirmou exatamente a mudança esperada, sem mudança
+de outros bytes. Esse foi o primeiro teste que comprovou escrita efetiva.
+
+Mesmo registrando "patch command is deprecated", o Firehose gravou essa
+palavra. A conclusão veio dos bytes relidos, e não apenas da mensagem ACK.
+
+O formato do comando usado foi:
+
+  <patch SECTOR_SIZE_IN_BYTES="4096"
+         byte_offset="8"
+         filename="DISK"
+         physical_partition_number="0"
+         size_in_bytes="8"
+         start_sector="188944"
+         value="7373724407824384" />
+
+Esse exemplo descreve o teste feito neste aparelho e com este original.
+Não é necessário executá-lo novamente no telefone já recuperado.
+
+5. Restaurar somente as diferenças, com limites e conferência
+
+O cliente comparou o original e a imagem atual em palavras alinhadas de
+8 bytes. As palavras já iguais ao original foram preservadas. Para cada
+palavra diferente, ele enviou PATCH com os oito bytes correspondentes do
+original. A conversão usada foi int.from_bytes(palavra, 'little').
+
+Para um offset no arquivo, o endereço foi calculado assim:
+
+  setor = 188944 + offset // 4096
+  byte_offset = offset % 4096
+
+Antes de aceitar cada comando, o cliente exigia LUN0, setor dentro de
+188944..190991, deslocamento alinhado e tamanho de oito bytes. O valor
+numérico precisava corresponder à palavra naquela posição do original.
+Nenhum comando de apagamento ou escrita em outra partição fazia parte
+desse cliente.
+
+A sequência inteira de correções foi simulada em memória antes do envio.
+O resultado simulado tinha de ser exatamente o arquivo original.
+
+Também foi validado um lote de 64 correções: a leitura do setor e da imagem
+inteira confirmou todas as alterações previstas. Só então foi feito o
+restante da restauração.
+
+A sequência completa restaurou 277635 palavras de oito bytes:
+
+  1 palavra no teste de escrita efetiva;
+  64 palavras no lote de validação;
+  277570 palavras na execução final.
+
+Cada PATCH precisava terminar com ACK e rawmode=false. Após concluir as
+correções de um setor, esse setor de 4096 bytes era lido e comparado com o
+estado esperado. A execução final conferiu 545 setores modificados.
+
+O cliente podia retomar uma restauração parcial apenas quando cada palavra
+lida fosse igual à palavra original ou à palavra do backup modificado
+conhecido. Dados desconhecidos causariam interrupção. Respostas ambíguas,
+NAK ou divergência de leitura também interromperiam o envio.
+
+6. Comprovar a restauração inteira
+
+A execução final começou às 11:55:15 e terminou às 12:01:41 de 14/10/2026.
+Depois das correções, foram relidos todos os 8388608 bytes de init_boot.
+A comparação foi feita byte por byte e por SHA-256.
+
+SHA-256 do original e da leitura final, iguais:
+  f61c74bab1781862e48f8abc4a8b7865f0ba661658a3807431395edc1ce069c8
+
+SHA-256 da imagem modificada inicial:
+  f50885fc4354236e230d7d92d281300c903203fc91e6d67b5231c2568b2b11f4
+
+SHA-256 do vbmeta verificado antes da restauração:
+  07382ae3f7a655b4598f9f82c34dd07a18ff21ee76b235676a3697e882a2e3b4
+
+O proprietário então reiniciou o telefone e confirmou a abertura do Android.
+Essa confirmação foi registrada separadamente da prova de escrita: ter o
+arquivo correto na partição e conseguir inicializar são verificações distintas.
+
+7. Arquivos que documentam a recuperação
+
+Os arquivos abaixo ficam na pasta deste trabalho, em outputs.
+
+  s24-restaurar-init-boot/init_boot.img
+    Original usado como referência, com o SHA-256 indicado acima.
+
+  s24-initboot-audit/init_boot_antes_da_gravacao.img
+    Backup da imagem inicialmente modificada com KernelSU.
+
+  s24-edl-diagnostico/init_boot_restaurado_lido_do_celular.img
+    Cópia dos 8 MiB efetivamente relidos depois da restauração.
+
+  s24-edl-diagnostico/restauracao_confirmada.json
+    Comparação final e confirmação do proprietário de que o Android abriu.
+
+  s24-edl-diagnostico/fragmented_write_result.json
+    Log da recusa explícita do comando PROGRAM.
+
+  s24-edl-diagnostico/init_boot_patch_probe_result.json
+    Teste PATCH com bytes já iguais.
+
+  s24-edl-diagnostico/original_word_patch_result.json
+    Prova de escrita efetiva da primeira palavra original.
+
+  s24-edl-diagnostico/patch_restore_20261014_115410.json
+    Resultado do lote de 64 correções.
+
+  s24-edl-diagnostico/patch_restore_20261014_115515.json
+    Resultado da execução final e da leitura completa.
+
+  s24-edl-diagnostico/restore_init_boot_patch.py
+    Cliente limitado ao original e aos limites desta partição, com
+    verificações de origem, respostas, setores e imagem completa.
+
+Somente init_boot foi escrito pelos clientes desta restauração. Não foi
+feita restauração de GPT nem alteração de vbmeta para aceitar software
+modificado. A recuperação não constitui uma auditoria de todas as partições:
+boot, recovery e vendor_boot de leituras anteriores correspondiam aos hashes
+esperados, mas o restante da memória não foi integralmente verificado.
+
+A estratégia que resolveu o caso foi separar uma recusa de PROGRAM de uma
+impossibilidade geral de escrita, testar PATCH de forma limitada, exigir
+prova por leitura e restaurar exatamente os bytes originais.

@@ -1,0 +1,148 @@
+"""Restore only the verified original init_boot through an existing Firehose.
+
+No loader upload, partition erase, GPT update, reset or other flash write is
+implemented. Fixed model-specific image hash, addresses and current vbmeta
+hash must pass before PROGRAM is sent. Always confirm actual read-back.
+"""
+import argparse
+import datetime
+import hashlib
+import json
+import time
+import xml.etree.ElementTree as ET
+
+from read_current_images import FirehoseReadTransport, OUT, WORKSPACE, parse_gpt
+
+STOCK_SHA256 = 'f61c74bab1781862e48f8abc4a8b7865f0ba661658a3807431395edc1ce069c8'
+ROOT_SHA256 = '07382ae3f7a655b4598f9f82c34dd07a18ff21ee76b235676a3697e882a2e3b4'
+IMAGE_SIZE = 8388608
+START = 188944
+SECTORS = 2048
+CONFIG = {'MemoryName':'UFS', 'Verbose':'1', 'ZLPAwareHost':'1',
+          'SkipStorageInit':'0', 'SkipWrite':'0',
+          'MaxPayloadSizeToTargetInBytes':'16384'}
+PROGRAM = {'SECTOR_SIZE_IN_BYTES':'4096',
+           'num_partition_sectors':str(SECTORS),
+           'physical_partition_number':'0', 'start_sector':str(START)}
+
+class InitBootWriter(FirehoseReadTransport):
+    def send(self, tag, attrs):
+        if tag in ('nop','read'):
+            return super().send(tag, attrs)
+        if not ((tag=='configure' and attrs==CONFIG) or
+                (tag=='program' and attrs==PROGRAM)):
+            raise RuntimeError('Comando ou intervalo de escrita nao permitido')
+        root = ET.Element('data')
+        ET.SubElement(root,tag,attrs)
+        data=b'<?xml version="1.0" encoding="UTF-8" ?>'+ET.tostring(root)
+        self.events.append({'direction':'tx','xml':data.decode('utf-8')})
+        if self.connection.write(data)!=len(data):
+            raise RuntimeError('Envio XML incompleto')
+
+def main():
+    parser=argparse.ArgumentParser()
+    parser.add_argument('--port',required=True)
+    args=parser.parse_args()
+    result={'started_at':datetime.datetime.now().astimezone().isoformat(),
+            'port':args.port,'operation':'restore_original_init_boot_only',
+            'write_timeout_seconds':30,
+            'program_command_sent':False,'image_bytes_sent':0,
+            'write_success_confirmed_by_readback':False}
+    transport=None
+    try:
+        stock_path=WORKSPACE/'outputs/s24-restaurar-init-boot/init_boot.img'
+        stock=stock_path.read_bytes()
+        if len(stock)!=IMAGE_SIZE or hashlib.sha256(stock).hexdigest()!=STOCK_SHA256:
+            raise RuntimeError('Imagem original nao passou na verificacao fixa de tamanho/hash')
+        validation=json.loads((OUT/'pre_write_validation.json').read_text(encoding='utf-8'))
+        if not (validation['stock_sha256']==STOCK_SHA256 and
+                validation['current_root_vbmeta_sha256']==ROOT_SHA256 and
+                validation['original_matches_current_root'] and
+                validation['current_root_hash_valid'] and
+                validation['current_root_signature_valid_against_embedded_key']):
+            raise RuntimeError('Validacao AVB previa ausente ou divergente')
+        transport=InitBootWriter(args.port)
+        # Flash programming may stall the endpoint longer than a short XML
+        # exchange. Use a bounded timeout that permits storage I/O to finish.
+        transport.connection.write_timeout=30
+        transport.confirm_firehose()
+        gpt=transport.read_sectors(0,5,'gpt_main0_pre_escrita.bin')
+        partitions=parse_gpt(gpt)
+        if partitions.get('init_boot')!={'start_sector':START,'end_sector':START+SECTORS-1,'sector_count':SECTORS}:
+            raise RuntimeError('GPT atual nao confirma o intervalo fixo de init_boot')
+        vbmeta=partitions.get('vbmeta')
+        if vbmeta!={'start_sector':4244736,'end_sector':4244767,'sector_count':32}:
+            raise RuntimeError('GPT atual nao confirma o intervalo esperado de vbmeta')
+        current_root=transport.read_sectors(vbmeta['start_sector'],32,'vbmeta_atual.bin')
+        if hashlib.sha256(current_root).hexdigest()!=ROOT_SHA256:
+            raise RuntimeError('vbmeta atual diverge do arquivo usado na validacao AVB')
+        before=transport.read_sectors(START,SECTORS,'init_boot_pre_escrita_direta.img')
+        result['image_path']=str(stock_path)
+        result['original_sha256']=STOCK_SHA256
+        result['previous_device_sha256']=hashlib.sha256(before).hexdigest()
+        result['target']={'lun':0,'sector_size':4096,'start_sector':START,'sector_count':SECTORS}
+        if before==stock:
+            result['status']='original_already_present_no_write_needed'
+            result['write_success_confirmed_by_readback']=True
+        else:
+            transport.send('configure',CONFIG)
+            response=transport.xml_response()
+            result['configure_response']=response
+            if response.get('value')!='ACK' or response.get('rawmode','false')!='false':
+                raise RuntimeError('CONFIGURE recusado: '+str(response))
+            payload=int(response.get('MaxPayloadSizeToTargetInBytes','16384'))
+            supported=response.get('MaxPayloadSizeToTargetInBytesSupported')
+            if supported is not None:
+                payload=min(payload,int(supported))
+            if payload<4096:
+                raise RuntimeError('Programmer anunciou limite de envio menor que um setor: '+str(payload))
+            payload=min(payload,16384)
+            payload=payload//4096*4096
+            result['payload_bytes']=payload
+            transport.send('program',PROGRAM)
+            result['program_command_sent']=True
+            response=transport.xml_response()
+            result['program_initial_response']=response
+            if response.get('value')!='ACK' or response.get('rawmode')!='true':
+                raise RuntimeError('PROGRAM recusado antes de enviar a imagem: '+str(response))
+            deadline=time.monotonic()+90
+            for offset in range(0,len(stock),payload):
+                chunk=stock[offset:offset+payload]
+                position=0
+                while position<len(chunk):
+                    if time.monotonic()>deadline:
+                        raise TimeoutError('Envio incompleto: nao enviar outros comandos enquanto modo raw estiver incerto')
+                    sent=transport.connection.write(chunk[position:])
+                    if sent<=0:
+                        raise RuntimeError('Envio de dados interrompido no modo raw')
+                    position+=sent
+                    result['image_bytes_sent']+=sent
+            result['program_final_response']=transport.xml_response(timeout=15)
+            final=result['program_final_response']
+            if final.get('rawmode')!='false':
+                raise RuntimeError('PROGRAM nao confirmou saida do modo raw; nenhuma nova consulta enviada')
+            readback=transport.read_sectors(START,SECTORS,'init_boot_apos_escrita_direta.img')
+            result['readback_sha256']=hashlib.sha256(readback).hexdigest()
+            result['readback_matches_original_byte_for_byte']=readback==stock
+            result['readback_matches_previous_byte_for_byte']=readback==before
+            result['write_success_confirmed_by_readback']=readback==stock
+            result['status']='original_restored_and_readback_verified' if readback==stock else 'write_did_not_restore_original'
+    except Exception as error:
+        result['status']='stopped'
+        result['error_type']=type(error).__name__
+        result['error']=str(error)
+    finally:
+        result['finished_at']=datetime.datetime.now().astimezone().isoformat()
+        if transport:
+            result['transport_backend']=getattr(transport.connection,'transport_backend','serial_com')
+            result['events']=transport.events
+            transport.close()
+        (OUT/'direct_write_result.json').write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
+        compact={k:v for k,v in result.items() if k!='events'}
+        if not result['write_success_confirmed_by_readback']:
+            compact['last_events']=result.get('events',[])[-10:]
+        print(json.dumps(compact,ensure_ascii=False,indent=2))
+    return 0 if result['write_success_confirmed_by_readback'] else 1
+
+if __name__=='__main__':
+    raise SystemExit(main())

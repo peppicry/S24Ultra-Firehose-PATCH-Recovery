@@ -1,0 +1,118 @@
+[
+  {
+    "file": "current_read_post_fragmented.json",
+    "recorded_status": "all_requested_reads_confirmed",
+    "captured_response_count": 7,
+    "captured_nak_count": 0,
+    "unique_captured_errors": [],
+    "responses_are_only_the_persisted_capture_subset": true
+  },
+  {
+    "file": "direct_write_attempt_1.json",
+    "recorded_status": "stopped",
+    "captured_response_count": 9,
+    "captured_nak_count": 0,
+    "unique_captured_errors": [],
+    "responses_are_only_the_persisted_capture_subset": true
+  },
+  {
+    "file": "direct_write_attempt_2.json",
+    "recorded_status": "stopped",
+    "captured_response_count": 9,
+    "captured_nak_count": 0,
+    "unique_captured_errors": [],
+    "responses_are_only_the_persisted_capture_subset": true
+  },
+  {
+    "file": "firehose_nop_result.json",
+    "recorded_status": "firehose_acknowledged_nop",
+    "captured_response_count": 1,
+    "captured_nak_count": 0,
+    "unique_captured_errors": [],
+    "responses_are_only_the_persisted_capture_subset": true
+  },
+  {
+    "file": "fragmented_write_result.json",
+    "recorded_status": "stopped",
+    "captured_response_count": 12,
+    "captured_nak_count": 1,
+    "unique_captured_errors": [
+      "ERROR: Start sector 188944 not allowed for LUN 0 through EDL Flash",
+      "ERROR: Failed to parse xml, error at offset 4090, 4096",
+      "ERROR: Failed to run the last command -1"
+    ],
+    "responses_are_only_the_persisted_capture_subset": true
+  },
+  {
+    "file": "init_boot_patch_probe_result.json",
+    "recorded_status": "identical_header_patch_acknowledged",
+    "captured_response_count": 10,
+    "captured_nak_count": 0,
+    "unique_captured_errors": [],
+    "responses_are_only_the_persisted_capture_subset": true
+  },
+  {
+    "file": "original_word_patch_result.json",
+    "recorded_status": "single_original_word_written_and_fully_verified",
+    "captured_response_count": 10,
+    "captured_nak_count": 0,
+    "unique_captured_errors": [],
+    "responses_are_only_the_persisted_capture_subset": true
+  },
+  {
+    "file": "passive_observation.json",
+    "recorded_status": "no_unsolicited_data_mode_unconfirmed",
+    "captured_response_count": 0,
+    "captured_nak_count": 0,
+    "unique_captured_errors": [],
+    "responses_are_only_the_persisted_capture_subset": true
+  },
+  {
+    "file": "patch_restore_20261014_115410.json",
+    "recorded_status": "bounded_partial_restore_verified",
+    "captured_response_count": 16,
+    "captured_nak_count": 0,
+    "unique_captured_errors": [],
+    "responses_are_only_the_persisted_capture_subset": true
+  },
+  {
+    "file": "patch_restore_20261014_115515.json",
+    "recorded_status": "original_restored_and_full_readback_verified",
+    "captured_response_count": 16,
+    "captured_nak_count": 0,
+    "unique_captured_errors": [],
+    "responses_are_only_the_persisted_capture_subset": true
+  },
+  {
+    "file": "pre_write_validation.json",
+    "recorded_status": null,
+    "captured_response_count": 0,
+    "captured_nak_count": 0,
+    "unique_captured_errors": [],
+    "responses_are_only_the_persisted_capture_subset": true
+  },
+  {
+    "file": "public_loader_offline_inspection.json",
+    "recorded_status": null,
+    "captured_response_count": 0,
+    "captured_nak_count": 0,
+    "unique_captured_errors": [],
+    "responses_are_only_the_persisted_capture_subset": true
+  },
+  {
+    "file": "restauracao_confirmada.json",
+    "recorded_status": null,
+    "captured_response_count": 0,
+    "captured_nak_count": 0,
+    "unique_captured_errors": [],
+    "responses_are_only_the_persisted_capture_subset": true
+  },
+  {
+    "file": "usb_transport_progress.json",
+    "recorded_status": null,
+    "captured_response_count": 0,
+    "captured_nak_count": 0,
+    "unique_captured_errors": [],
+    "responses_are_only_the_persisted_capture_subset": true
+  }
+]

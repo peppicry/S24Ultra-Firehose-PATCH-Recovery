@@ -1,0 +1,203 @@
+"""Restore only pinned original init_boot words using standard Firehose PATCH.
+
+Every PATCH value comes from the verified original; GPT/root/image are checked
+beforehand. Every modified 4096-byte sector is read back, then the full 8 MiB.
+Supports resuming only images whose 8-byte words are original or pinned backup.
+No PROGRAM, ERASE, loader upload, GPT write, reset or arbitrary patch API.
+"""
+import argparse
+import collections
+import datetime
+import hashlib
+import json
+import os
+import time
+import xml.etree.ElementTree as ET
+
+from read_current_images import FirehoseReadTransport, OUT, WORKSPACE, parse_gpt
+from restore_init_boot_direct import STOCK_SHA256, ROOT_SHA256, IMAGE_SIZE, START, SECTORS
+from probe_init_boot_patch import PATCHED_SHA256
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+class OriginalOnlyPatcher(FirehoseReadTransport):
+    def __init__(self, port, stock):
+        super().__init__(port)
+        self.stock=stock
+        self.events=collections.deque(maxlen=80)
+        self.log_counts=collections.Counter()
+        self.patch_seconds=0.0
+        self.patch_count=0
+        self.idle=True
+
+    def send(self,tag,attrs):
+        if tag in ('nop','read'):
+            return super().send(tag,attrs)
+        if tag!='patch' or set(attrs)!={'SECTOR_SIZE_IN_BYTES','byte_offset','filename',
+              'physical_partition_number','size_in_bytes','start_sector','value'}:
+            raise RuntimeError('Only fixed original-word PATCH commands are allowed')
+        sector=int(attrs['start_sector']); offset=int(attrs['byte_offset'])
+        if not START<=sector<START+SECTORS or not 0<=offset<=4088 or offset%8:
+            raise RuntimeError('PATCH outside the fixed init_boot interval')
+        image_offset=(sector-START)*4096+offset
+        if (attrs['SECTOR_SIZE_IN_BYTES']!='4096' or attrs['filename']!='DISK' or
+                attrs['physical_partition_number']!='0' or attrs['size_in_bytes']!='8' or
+                attrs['value']!=str(int.from_bytes(self.stock[image_offset:image_offset+8],'little'))):
+            raise RuntimeError('PATCH value is not the corresponding original init_boot word')
+        root=ET.Element('data'); ET.SubElement(root,tag,attrs)
+        packet=b'<?xml version="1.0" encoding="UTF-8" ?>'+ET.tostring(root)
+        self.events.append({'direction':'tx','xml':packet.decode()})
+        self.idle=False
+        if self.connection.write(packet)!=len(packet):
+            raise RuntimeError('Incomplete PATCH XML send')
+
+    def xml_response(self,timeout=10):
+        deadline=time.monotonic()+timeout
+        while time.monotonic()<deadline:
+            end=self.buffer.find(b'</data>')
+            if end>=0:
+                packet=bytes(self.buffer[:end+7]); del self.buffer[:end+7]
+                self.events.append({'direction':'rx','xml':packet.decode('utf-8','replace')})
+                root=ET.fromstring(packet.strip())
+                for node in root.iter('log'):
+                    self.log_counts[node.attrib.get('value','')]+=1
+                for node in root.iter('response'):
+                    response=dict(node.attrib)
+                    self.idle=response.get('rawmode')=='false'
+                    return response
+                continue
+            if len(self.buffer)>65536:
+                raise RuntimeError('XML response exceeded the fixed limit')
+            # Read a first byte promptly, then only bytes already available.
+            # Avoid waiting 0.2 s to fill a 4096-byte read for every short ACK.
+            waiting=self.connection.in_waiting
+            self.buffer.extend(self.connection.read(min(4096,waiting) if waiting else 1))
+        raise TimeoutError('No complete XML response; no further commands sent')
+
+    def original_word(self,image_offset):
+        sector=START+image_offset//4096; offset=image_offset%4096
+        attrs={'SECTOR_SIZE_IN_BYTES':'4096','byte_offset':str(offset),'filename':'DISK',
+               'physical_partition_number':'0','size_in_bytes':'8',
+               'start_sector':str(sector),
+               'value':str(int.from_bytes(self.stock[image_offset:image_offset+8],'little'))}
+        began=time.monotonic()
+        self.send('patch',attrs)
+        response=self.xml_response(timeout=10)
+        self.patch_seconds+=time.monotonic()-began
+        if response.get('value')!='ACK' or response.get('rawmode')!='false':
+            raise RuntimeError('PATCH did not confirm completion: '+str(response))
+        self.patch_count+=1
+
+def main():
+    parser=argparse.ArgumentParser()
+    parser.add_argument('--port',required=True)
+    parser.add_argument('--limit-commands',type=int,default=0)
+    args=parser.parse_args()
+    if args.limit_commands<0:
+        parser.error('limit-commands must be nonnegative')
+    stamp=datetime.datetime.now().astimezone().strftime('%Y%m%d_%H%M%S')
+    result_path=OUT/('patch_restore_%s.json'%stamp)
+    result={'started_at':datetime.datetime.now().astimezone().isoformat(),
+            'port':args.port,'operation':'restore_original_init_boot_using_patch',
+            'process_id':os.getpid(),
+            'command_limit':args.limit_commands,'full_restoration_confirmed':False,
+            'confirmed_patch_commands':0,'verified_sectors':0}
+    transport=None; working=None
+    try:
+        stock=(WORKSPACE/'outputs/s24-restaurar-init-boot/init_boot.img').read_bytes()
+        patched=(WORKSPACE/'outputs/s24-initboot-audit/init_boot_antes_da_gravacao.img').read_bytes()
+        if len(stock)!=IMAGE_SIZE or sha(stock)!=STOCK_SHA256 or sha(patched)!=PATCHED_SHA256:
+            raise RuntimeError('Pinned original/backup verification failed')
+        validation=json.loads((OUT/'pre_write_validation.json').read_text(encoding='utf-8'))
+        if not (validation['stock_sha256']==STOCK_SHA256 and
+                validation['current_root_vbmeta_sha256']==ROOT_SHA256 and
+                validation['original_matches_current_root'] and validation['current_root_hash_valid'] and
+                validation['current_root_signature_valid_against_embedded_key']):
+            raise RuntimeError('Pinned original AVB validation missing or mismatched')
+        transport=OriginalOnlyPatcher(args.port,stock)
+        transport.confirm_firehose()
+        gpt=transport.read_sectors(0,5,'gpt_main0_pre_patch_restore.bin')
+        partitions=parse_gpt(gpt)
+        if partitions.get('init_boot')!={'start_sector':START,'end_sector':START+SECTORS-1,'sector_count':SECTORS}:
+            raise RuntimeError('Current init_boot GPT bounds mismatch')
+        if partitions.get('vbmeta')!={'start_sector':4244736,'end_sector':4244767,'sector_count':32}:
+            raise RuntimeError('Current vbmeta bounds mismatch')
+        root=transport.read_sectors(4244736,32,'vbmeta_atual.bin')
+        if sha(root)!=ROOT_SHA256:
+            raise RuntimeError('Current vbmeta differs from the verified original reference')
+        before=transport.read_sectors(START,SECTORS,'init_boot_pre_patch_restore_%s.img'%stamp)
+        pending=[]
+        for i in range(0,IMAGE_SIZE,8):
+            word=before[i:i+8]
+            if word!=stock[i:i+8]:
+                if word!=patched[i:i+8]:
+                    raise RuntimeError('Unknown current data at image offset %d; refusing restore'%i)
+                pending.append(i)
+        # Prove the entire planned restoration gives exactly the pinned original.
+        simulated=bytearray(before)
+        for i in pending:
+            simulated[i:i+8]=stock[i:i+8]
+        if bytes(simulated)!=stock:
+            raise RuntimeError('Offline planned restoration did not yield the exact original')
+        working=bytearray(before)
+        result['before_sha256']=sha(before)
+        result['original_sha256']=STOCK_SHA256
+        result['remaining_original_words']=len(pending)
+        result['offline_plan_yields_exact_original']=True
+        print(json.dumps({'stage':'preflight_complete','pending_words':len(pending)}),flush=True)
+        last_progress=time.monotonic()
+        pending_by_sector=collections.defaultdict(list)
+        for i in pending:
+            pending_by_sector[i//4096].append(i)
+        limit_reached=False
+        for image_sector,offsets in sorted(pending_by_sector.items()):
+            for offset in offsets:
+                if (OUT/'STOP_INIT_BOOT_PATCH').exists():
+                    result['stop_requested']=True; limit_reached=True; break
+                if args.limit_commands and transport.patch_count>=args.limit_commands:
+                    limit_reached=True; break
+                transport.original_word(offset)
+                working[offset:offset+8]=stock[offset:offset+8]
+                if time.monotonic()-last_progress>=5:
+                    progress={'stage':'patch_progress','confirmed_commands':transport.patch_count,
+                              'total_pending_words':len(pending),
+                              'percent':round(100*transport.patch_count/max(1,len(pending)),2),
+                              'patch_seconds':round(transport.patch_seconds,2)}
+                    (OUT/'patch_restore_progress.json').write_text(json.dumps(progress,indent=2),encoding='utf-8')
+                    print(json.dumps(progress),flush=True); last_progress=time.monotonic()
+            sector_start=image_sector*4096
+            readback=transport.read_sectors(START+image_sector,1,'init_boot_patch_sector_latest.img')
+            if readback!=working[sector_start:sector_start+4096]:
+                raise RuntimeError('Sector readback mismatch at image sector %d; stopping'%image_sector)
+            result['verified_sectors']+=1
+            if limit_reached:
+                break
+        complete=transport.read_sectors(START,SECTORS,'init_boot_pos_patch_restore_%s.img'%stamp)
+        result['readback_sha256']=sha(complete)
+        result['readback_matches_planned_state']=complete==bytes(working)
+        if complete!=bytes(working):
+            raise RuntimeError('Full readback differs from acknowledged and sector-verified words')
+        result['full_restoration_confirmed']=complete==stock
+        result['status']='original_restored_and_full_readback_verified' if complete==stock else 'bounded_partial_restore_verified'
+        result['restored_file']=str(OUT/('init_boot_pos_patch_restore_%s.img'%stamp))
+    except Exception as error:
+        result['status']='stopped'; result['error_type']=type(error).__name__; result['error']=str(error)
+        # No further queries after an ambiguous response/timeout. A fresh session
+        # can read and resume a verified original/backup mixture later.
+    finally:
+        if transport:
+            result['confirmed_patch_commands']=transport.patch_count
+            result['patch_command_seconds']=round(transport.patch_seconds,3)
+            result['protocol_idle_on_close']=transport.idle
+            result['log_counts']=dict(transport.log_counts)
+            result['last_events']=list(transport.events)
+            transport.close()
+        result['finished_at']=datetime.datetime.now().astimezone().isoformat()
+        result_path.write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
+        (OUT/'patch_restore_latest_result.json').write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
+        print(json.dumps({k:v for k,v in result.items() if k not in ('last_events','log_counts')},ensure_ascii=False,indent=2),flush=True)
+    return 1 if result['status']=='stopped' else 0
+
+if __name__=='__main__':
+    raise SystemExit(main())

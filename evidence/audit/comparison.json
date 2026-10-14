@@ -1,0 +1,76 @@
+{
+  "current_path": "<DOWNLOADS>\\init_boot_0",
+  "reference_path": "<DOWNLOADS>\\init_boot (1).img",
+  "added_files": [
+    "init.real",
+    "kernelsu.ko",
+    "ksu_config",
+    "stock_image.sha1"
+  ],
+  "removed_files": [],
+  "changed_files": [
+    {
+      "path": "init",
+      "old_size": 3247392,
+      "new_size": 606912,
+      "old_sha256": "4d722b201f01712680387aee4f43ce3767bb8b1eb6293fe7c1da977e5d938645",
+      "new_sha256": "9e44e4b9c37934530b36ebb0349ca474f9249689eaaf00f0465df0486d225f8e"
+    }
+  ],
+  "original_init_preserved_as_init_real": true,
+  "recorded_stock_image_sha1": "4b2728be4bb1a9e880168e5914d0cb63443ed375",
+  "reference_sha1": "4b2728be4bb1a9e880168e5914d0cb63443ed375",
+  "recorded_stock_sha1_matches_reference": true,
+  "signed_vbmeta_blob_identical": true,
+  "ksu_config": "bundled=1",
+  "module_modinfo": [
+    "license=GPL",
+    "author=weishu",
+    "description=Android KernelSU",
+    "vermagic=6.1.166-dirty SMP preempt mod_unload modversions aarch64",
+    "name=kernelsu",
+    "depends="
+  ],
+  "vbmeta_system_metadata": {
+    "footer": null,
+    "algorithm_type": 2,
+    "algorithm": "SHA256_RSA4096",
+    "flags": 0,
+    "rollback_index": 0,
+    "rollback_index_location": 0,
+    "release_string": "avbtool 1.4.0",
+    "public_key_sha256": "15f66990b32b613508fa9979a5fc70aa37cb3c3d6043e82a998765716d6f5abd",
+    "descriptors": [
+      {
+        "tag": 1,
+        "size": 248
+      },
+      {
+        "tag": 1,
+        "size": 256
+      },
+      {
+        "tag": 1,
+        "size": 256
+      },
+      {
+        "tag": 1,
+        "size": 256
+      },
+      {
+        "tag": 1,
+        "size": 256
+      },
+      {
+        "tag": 1,
+        "size": 256
+      },
+      {
+        "tag": 1,
+        "size": 256
+      }
+    ],
+    "vbmeta_hash_matches": true,
+    "signature_valid_against_embedded_key": true
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "path": "<WORKSPACE>\\outputs\\s24-edl-diagnostico\\candidatos-firehose\\SM-S928B_publico_BIT_nao_confirmado.elf",
+  "bytes": 675734,
+  "sha256": "d54a8e64ab4c01789f70431cb671d990754085148543d781ed158df6599e3004",
+  "git_blob_sha1": "73d9e71be4db287c24016d8ff507a183a2e851ef",
+  "first_32_bytes_hex": "2e7274634b9f85cdd3c8216588d95b3fd4f2ddc245be7c12af96000ff658d1ac",
+  "elf_magic": false,
+  "device_loaded": false,
+  "certificates": [],
+  "relevant_strings": []
+}

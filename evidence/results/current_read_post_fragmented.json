@@ -1,0 +1,236 @@
+{
+  "observed_at": "2026-10-14T11:29:18.339810+02:00",
+  "port": "COM1",
+  "operation": "read_only_current_partition_verification",
+  "gpt_matches_preserved_backup_byte_for_byte": false,
+  "gpt_crc_valid": true,
+  "init_boot_partition": {
+    "start_sector": 188944,
+    "end_sector": 190991,
+    "sector_count": 2048
+  },
+  "vbmeta_partition": {
+    "start_sector": 4244736,
+    "end_sector": 4244767,
+    "sector_count": 32
+  },
+  "init_boot_sha256": "f50885fc4354236e230d7d92d281300c903203fc91e6d67b5231c2568b2b11f4",
+  "init_boot_matches_previous_patched_image": true,
+  "init_boot_matches_restoration_reference": false,
+  "vbmeta_sha256": "07382ae3f7a655b4598f9f82c34dd07a18ff21ee76b235676a3697e882a2e3b4",
+  "status": "all_requested_reads_confirmed",
+  "transport_backend": "serial_com",
+  "events": [
+    {
+      "direction": "tx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><data><nop /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: Calling handler for nop\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: Binary build date: Jun 10 2026 @ 14:28:02\n\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: Chip serial num (0x0) Chip ID (0x0)\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: Supported Functions (15):\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: program\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: read\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: nop\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: patch\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: configure\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: setbootablestoragedrive\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: erase\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: power\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: firmwarewrite\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: getstorageinfo\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: benchmark\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: emmc\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: ufs\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: fixgpt\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: getsha256digest\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: End of supported functions 15\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<response value=\"ACK\" rawmode=\"false\" /></data>"
+    },
+    {
+      "direction": "tx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><data><read SECTOR_SIZE_IN_BYTES=\"4096\" num_partition_sectors=\"5\" physical_partition_number=\"0\" start_sector=\"0\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: Calling handler for read\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute slot with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute last_sector with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute skip_bad_block with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute get_spare with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute ecc_disabled with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<response value=\"ACK\" rawmode=\"true\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<response value=\"ACK\" rawmode=\"false\" /></data>"
+    },
+    {
+      "read_saved": "<WORKSPACE>\\outputs\\s24-edl-diagnostico\\gpt_main0_atual.bin",
+      "bytes": 20480,
+      "sha256": "64e4f30f751564c52a96a0523246d2dae044364f52c81c0d6798f4a44858e680"
+    },
+    {
+      "direction": "tx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><data><read SECTOR_SIZE_IN_BYTES=\"4096\" num_partition_sectors=\"2048\" physical_partition_number=\"0\" start_sector=\"188944\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: Calling handler for read\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute slot with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute last_sector with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute skip_bad_block with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute get_spare with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute ecc_disabled with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<response value=\"ACK\" rawmode=\"true\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<response value=\"ACK\" rawmode=\"false\" /></data>"
+    },
+    {
+      "read_saved": "<WORKSPACE>\\outputs\\s24-edl-diagnostico\\init_boot_atual.img",
+      "bytes": 8388608,
+      "sha256": "f50885fc4354236e230d7d92d281300c903203fc91e6d67b5231c2568b2b11f4"
+    },
+    {
+      "direction": "tx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><data><read SECTOR_SIZE_IN_BYTES=\"4096\" num_partition_sectors=\"32\" physical_partition_number=\"0\" start_sector=\"4244736\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"INFO: Calling handler for read\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute slot with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute last_sector with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute skip_bad_block with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute get_spare with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<log value=\"DEBUG: Can't decode attribute ecc_disabled with value \" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<response value=\"ACK\" rawmode=\"true\" /></data>"
+    },
+    {
+      "direction": "rx",
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<data>\n<response value=\"ACK\" rawmode=\"false\" /></data>"
+    },
+    {
+      "read_saved": "<WORKSPACE>\\outputs\\s24-edl-diagnostico\\vbmeta_atual.bin",
+      "bytes": 131072,
+      "sha256": "07382ae3f7a655b4598f9f82c34dd07a18ff21ee76b235676a3697e882a2e3b4"
+    }
+  ]
+}

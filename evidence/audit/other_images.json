@@ -1,0 +1,202 @@
+[
+  {
+    "partition": "boot",
+    "path": "<DOWNLOADS>\\boot_0",
+    "size": 100663296,
+    "sha256": "abc5a0297fd47e9cdfb4d0b84ecb907e1de0dc45303ab8d5c28107b0f6bd5cd5",
+    "avb": {
+      "footer": {
+        "version": "1.0",
+        "original_image_size": 38146576,
+        "vbmeta_offset": 38150144,
+        "vbmeta_size": 2112,
+        "reserved_zero": true
+      },
+      "algorithm_type": 2,
+      "algorithm": "SHA256_RSA4096",
+      "flags": 0,
+      "rollback_index": 0,
+      "rollback_index_location": 0,
+      "release_string": "avbtool 1.2.0",
+      "public_key_sha256": "15f66990b32b613508fa9979a5fc70aa37cb3c3d6043e82a998765716d6f5abd",
+      "descriptors": [
+        {
+          "tag": 2,
+          "size": 200,
+          "partition": "boot",
+          "image_size": 38146576,
+          "hash_algorithm": "sha256",
+          "salt": "74d6312ead2ce02d9154c0247f39f96c43a634cf1d87f04bc9f77798e7cbc280",
+          "expected_digest": "b92c4a30b351490fe1648c54d3b9d16e29a1ff847b2101159a5e2b25125d2109",
+          "flags": 0,
+          "calculated_digest": "b92c4a30b351490fe1648c54d3b9d16e29a1ff847b2101159a5e2b25125d2109",
+          "image_hash_matches": true
+        }
+      ],
+      "vbmeta_hash_matches": true,
+      "signature_valid_against_embedded_key": true
+    },
+    "public_key_matches_init_boot_reference": true,
+    "content_hash_verified": true,
+    "status": "content_hash_matches"
+  },
+  {
+    "partition": "recovery",
+    "path": "<DOWNLOADS>\\recovery_0",
+    "size": 110034944,
+    "sha256": "f5145345ef4f6b8c997124ff0f76791883ae31660493accc15756e7ed1949066",
+    "avb": {
+      "footer": {
+        "version": "1.0",
+        "original_image_size": 85336592,
+        "vbmeta_offset": 85340160,
+        "vbmeta_size": 2112,
+        "reserved_zero": true
+      },
+      "algorithm_type": 2,
+      "algorithm": "SHA256_RSA4096",
+      "flags": 0,
+      "rollback_index": 0,
+      "rollback_index_location": 0,
+      "release_string": "avbtool 1.2.0",
+      "public_key_sha256": "15f66990b32b613508fa9979a5fc70aa37cb3c3d6043e82a998765716d6f5abd",
+      "descriptors": [
+        {
+          "tag": 2,
+          "size": 208,
+          "partition": "recovery",
+          "image_size": 85336592,
+          "hash_algorithm": "sha256",
+          "salt": "0fcd56fbc900fd6d9cf083bde749aca600ad6fb072d6c002b5affa5a1e42a720",
+          "expected_digest": "a5c1e01b4ec39c3e1f30ac0a286f2215564d48ad639b59eacda4f67690a3837a",
+          "flags": 0,
+          "calculated_digest": "a5c1e01b4ec39c3e1f30ac0a286f2215564d48ad639b59eacda4f67690a3837a",
+          "image_hash_matches": true
+        }
+      ],
+      "vbmeta_hash_matches": true,
+      "signature_valid_against_embedded_key": true
+    },
+    "public_key_matches_init_boot_reference": true,
+    "content_hash_verified": true,
+    "status": "content_hash_matches"
+  },
+  {
+    "partition": "vendor_boot",
+    "path": "<DOWNLOADS>\\vendor_boot_0",
+    "size": 100663296,
+    "sha256": "be1a7fbb823c1b259a7cdb1f9a85ee93e459b2ad5bf7a83193ffabf61a2e1257",
+    "avb": {
+      "footer": {
+        "version": "1.0",
+        "original_image_size": 24175104,
+        "vbmeta_offset": 24178688,
+        "vbmeta_size": 2112,
+        "reserved_zero": true
+      },
+      "algorithm_type": 2,
+      "algorithm": "SHA256_RSA4096",
+      "flags": 0,
+      "rollback_index": 0,
+      "rollback_index_location": 0,
+      "release_string": "avbtool 1.2.0",
+      "public_key_sha256": "15f66990b32b613508fa9979a5fc70aa37cb3c3d6043e82a998765716d6f5abd",
+      "descriptors": [
+        {
+          "tag": 2,
+          "size": 208,
+          "partition": "vendor_boot",
+          "image_size": 24175104,
+          "hash_algorithm": "sha256",
+          "salt": "86c8763eb42c3e02eca64406da711bc7bbbda4c71a07449530eae4f1bd2a631c",
+          "expected_digest": "75069c39ece2958c4e715c43d55a05ee14c195a442365a79994a44e8b3d67571",
+          "flags": 0,
+          "calculated_digest": "75069c39ece2958c4e715c43d55a05ee14c195a442365a79994a44e8b3d67571",
+          "image_hash_matches": true
+        }
+      ],
+      "vbmeta_hash_matches": true,
+      "signature_valid_against_embedded_key": true
+    },
+    "public_key_matches_init_boot_reference": true,
+    "content_hash_verified": true,
+    "status": "content_hash_matches"
+  },
+  {
+    "partition": "pvmfw",
+    "path": "<DOWNLOADS>\\pvmfw_0",
+    "size": 1048576,
+    "sha256": "30e14955ebf1352266dc2ff8067e68104607e750abb9d3b36582b8af909fcb58",
+    "avb": {
+      "footer": null,
+      "error": "No AVB footer or vbmeta header"
+    },
+    "public_key_matches_init_boot_reference": false,
+    "content_hash_verified": false,
+    "status": "content_not_checked"
+  },
+  {
+    "partition": "vm-bootsys",
+    "path": "<DOWNLOADS>\\vm-bootsys_0",
+    "size": 351272960,
+    "sha256": "122375d8121c1b9fe359ec22b38453ccdb33bab1bd9d59ffc77f63bb90090484",
+    "avb": {
+      "footer": null,
+      "error": "No AVB footer or vbmeta header"
+    },
+    "public_key_matches_init_boot_reference": false,
+    "content_hash_verified": false,
+    "status": "content_not_checked"
+  },
+  {
+    "partition": "vbmeta_system",
+    "path": "<DOWNLOADS>\\vbmeta_system_0",
+    "size": 65536,
+    "sha256": "cf46641b587e3d3a05bd8c693fcf223e143a5b122c810ba5f54948662faf6b00",
+    "avb": {
+      "footer": null,
+      "algorithm_type": 2,
+      "algorithm": "SHA256_RSA4096",
+      "flags": 0,
+      "rollback_index": 0,
+      "rollback_index_location": 0,
+      "release_string": "avbtool 1.4.0",
+      "public_key_sha256": "15f66990b32b613508fa9979a5fc70aa37cb3c3d6043e82a998765716d6f5abd",
+      "descriptors": [
+        {
+          "tag": 1,
+          "size": 248
+        },
+        {
+          "tag": 1,
+          "size": 256
+        },
+        {
+          "tag": 1,
+          "size": 256
+        },
+        {
+          "tag": 1,
+          "size": 256
+        },
+        {
+          "tag": 1,
+          "size": 256
+        },
+        {
+          "tag": 1,
+          "size": 256
+        },
+        {
+          "tag": 1,
+          "size": 256
+        }
+      ],
+      "vbmeta_hash_matches": true,
+      "signature_valid_against_embedded_key": true
+    },
+    "public_key_matches_init_boot_reference": true,
+    "content_hash_verified": false,
+    "status": "metadata_signature_valid_content_not_checked"
+  }
+]

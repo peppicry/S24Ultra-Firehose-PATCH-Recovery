@@ -1,0 +1,36 @@
+"""Classify an init_boot read-back after the failed UnlockTool operation."""
+import argparse
+import json
+import pathlib
+import audit_init_boot as audit
+
+parser = argparse.ArgumentParser()
+parser.add_argument('image', nargs='?', default=str(audit.ROOT/'init_boot_pos_falha.img'))
+arguments = parser.parse_args()
+path = pathlib.Path(arguments.image)
+if not path.is_file():
+    raise SystemExit('Leitura ainda ausente: ' + str(path))
+data = path.read_bytes()
+before = (audit.OUT/'init_boot_antes_da_gravacao.img').read_bytes()
+stock = (audit.OUT.parent/'s24-restaurar-init-boot'/'init_boot.img').read_bytes()
+if len(data) != len(stock):
+    raise SystemExit(f'Leitura incompleta ou tamanho inesperado: {len(data)} bytes; esperado {len(stock)}.')
+result = {'path': str(path), 'size': len(data), 'sha256': audit.sha256(data),
+          'matches_stock_byte_for_byte': data == stock, 'matches_previous_byte_for_byte': data == before}
+if data == stock:
+    result['status'] = 'original_image_fully_present'
+elif data == before:
+    result['status'] = 'previous_patched_image_still_present'
+else:
+    result['status'] = 'different_from_both_references'
+    # Count each sector once; differing padding does not automatically mean corrupt boot data.
+    sectors = range(0, len(data), 4096)
+    result['sectors_differing_from_original'] = sum(data[p:p+4096] != stock[p:p+4096] for p in sectors)
+    result['sectors_differing_from_previous'] = sum(data[p:p+4096] != before[p:p+4096] for p in sectors)
+    result['first_different_sector_from_original'] = next((p//4096 for p in sectors if data[p:p+4096] != stock[p:p+4096]), None)
+    result['last_different_sector_from_original'] = next((p//4096 for p in reversed(list(sectors)) if data[p:p+4096] != stock[p:p+4096]), None)
+try:
+    result['avb'] = audit.parse_avb(data)
+except Exception as error:
+    result['avb_error'] = str(error)
+print(json.dumps(result,ensure_ascii=False,indent=2))

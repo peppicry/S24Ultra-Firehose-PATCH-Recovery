@@ -1,0 +1,52 @@
+"""Inspect a downloaded loader as data only; never connect to a device."""
+import hashlib
+import json
+import pathlib
+import re
+import struct
+
+from cryptography import x509
+
+out = pathlib.Path(__file__).resolve().parent
+path = out / 'candidatos-firehose/SM-S928B_publico_BIT_nao_confirmado.elf'
+data = path.read_bytes()
+result = {'path': str(path), 'bytes': len(data),
+          'sha256': hashlib.sha256(data).hexdigest(),
+          'git_blob_sha1': hashlib.sha1(b'blob '+str(len(data)).encode()+b'\0'+data).hexdigest(),
+          'first_32_bytes_hex': data[:32].hex(), 'elf_magic': data.startswith(b'\x7fELF'),
+          'device_loaded': False, 'certificates': [], 'relevant_strings': []}
+for match in re.finditer(rb'\x30\x82', data):
+    offset = match.start()
+    if offset+4 > len(data):
+        continue
+    size = int.from_bytes(data[offset+2:offset+4], 'big')+4
+    if not 256 <= size <= 8192 or offset+size > len(data):
+        continue
+    try:
+        cert = x509.load_der_x509_certificate(data[offset:offset+size])
+    except ValueError:
+        continue
+    result['certificates'].append({'offset': offset, 'bytes': size,
+        'subject': cert.subject.rfc4514_string(), 'issuer': cert.issuer.rfc4514_string()})
+strings = re.findall(rb'[\x20-\x7e]{6,}', data)
+for raw in strings:
+    s = raw.decode('ascii')
+    if re.search(r'SW_ID|HW_ID|OEM_ID|MODEL_ID|S928|8650|not allowed|Start sector|'
+                 r'\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b|SAMSUNG|Samsung|QUALCOMM', s):
+        result['relevant_strings'].append(s[:400])
+if result['elf_magic']:
+    result['elf_class'] = data[4]
+    result['elf_endian'] = data[5]
+    if data[4:6] == b'\x02\x01':
+        phoff = struct.unpack_from('<Q', data, 32)[0]
+        phsize, phcount = struct.unpack_from('<HH', data, 54)
+        result['program_headers'] = []
+        if phsize >= 56 and phoff+phsize*phcount <= len(data):
+            for i in range(phcount):
+                ptype, flags, offset, vaddr, paddr, filesz, memsz, align = struct.unpack_from(
+                    '<IIQQQQQQ', data, phoff+i*phsize)
+                result['program_headers'].append({'type': ptype, 'flags': flags,
+                    'offset': offset, 'file_bytes': filesz})
+(out / 'public_loader_offline_inspection.json').write_text(
+    json.dumps(result, ensure_ascii=False, indent=2), encoding='utf-8')
+print(json.dumps(result, ensure_ascii=False, indent=2))

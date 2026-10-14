@@ -1,0 +1,109 @@
+DIAGNÓSTICO — S24 ULTRA / RECUSA DE ESCRITA DE INIT_BOOT EM EDL
+Atualizado em 14/10/2026, após leitura confirmada às 11:29:18 (UTC+02).
+Nenhuma mensagem foi enviada ao suporte.
+
+RESULTADO CONFIRMADO
+O Firehose carregado pelo BOOT DEVICE do UnlockTool recusa explicitamente:
+  ERROR: Start sector 188944 not allowed for LUN 0 through EDL Flash
+  <response value="NAK" rawmode="false" />
+O setor 188944 é o início de init_boot na GPT atual. O teste em oito blocos
+parou no primeiro bloco de 1 MiB; os outros sete não foram enviados.
+A leitura posterior dos 8 MiB completos confirmou que init_boot permanece
+idêntico à imagem modificada inicial, sem alteração de nenhum byte.
+A restauração NÃO foi concluída.
+
+O ACK inicial/rawmode=true foi seguido pela recusa do endereço e pelo NAK.
+Nem esse ACK nem a barra em 100% comprovam persistência de uma gravação.
+Os erros de parsing XML no mesmo log ocorreram depois da recusa de endereço.
+A restrição foi confirmada no Firehose atual; a política interna responsável
+não foi determinada. Não foi confirmado programmer alternativo compatível.
+Não há prova de defeito físico da UFS ou bloqueio de toda a memória.
+Novas gravações repetidas com esse mesmo Firehose não estão justificadas.
+
+APARELHO E SESSÃO
+Samsung S24 Ultra SM-S928B; perfil UnlockTool BIT-6; build S928BXXU6ZZI4.
+UnlockTool observado: 2026.09.23.0.
+Programmer: Jun 10 2026 - 14:28:02.
+Conexão atual: COM1, Qualcomm 9008, USB VID 05c6 / PID 9008.
+BOOT DEVICE autenticou e listou as partições na COM1.
+Segundo o proprietário, só é possível usar EDL; Download não está acessível.
+
+ORIGINAL E MODIFICAÇÃO
+init_boot: LUN0; setores de 4096 bytes; início 188944; fim 190991;
+2048 setores; total 8388608 bytes.
+Imagem original preparada, SHA256:
+f61c74bab1781862e48f8abc4a8b7865f0ba661658a3807431395edc1ce069c8
+Corresponde ao hash de init_boot esperado pelo vbmeta atual do aparelho.
+As verificações AVB internas de hash e assinatura são válidas contra a chave
+embutida; não houve autenticação independente dessa chave Samsung.
+
+Imagem atual lida do aparelho, SHA256:
+f50885fc4354236e230d7d92d281300c903203fc91e6d67b5231c2568b2b11f4
+Contém KernelSU: init substituído, init.real, kernelsu.ko, ksu_config,
+stock_image.sha1. init.real preserva o init original, e stock_image.sha1
+corresponde ao SHA1 da imagem original. A imagem modificada não corresponde
+ao hash esperado pelo vbmeta do próprio aparelho.
+
+vbmeta atual, SHA256:
+07382ae3f7a655b4598f9f82c34dd07a18ff21ee76b235676a3697e882a2e3b4
+Permanece igual nas leituras anteriores e na leitura final de 11:29:18.
+boot, recovery e vendor_boot de leituras anteriores correspondem aos seus
+hashes no vbmeta. As outras partições não foram todas verificadas.
+
+GPT E ERASE RELATADO
+O proprietário relata ERASE de gpt_main0 com OK após a leitura de 13/10 às 22:03.
+Na leitura atual, o cabeçalho e a matriz de entradas da GPT principal são
+válidos por CRC32 e idênticos ao backup anterior ao ERASE. O arquivo inteiro
+de 20480 bytes difere em 1370 bytes, incluindo MBR e áreas fora da matriz.
+A causa das diferenças não foi confirmada. O intervalo init_boot não mudou.
+A GPT reserva não foi lida. Não foi feita escrita de GPT pelo assistente.
+Backup preservado: outputs/backup-gpt-lun0-antes-do-erase/gpt_main0_antes_do_erase.bin
+SHA256: 70590d9277fc17c34272eb222b4ca561970ff176b860f0cd70aee5e328a986bf
+ERASE com OK não comprova permissão para PROGRAM de init_boot.
+
+TENTATIVAS E VERIFICAÇÃO
+13/10: XML/FLASH e WRITE pelo UnlockTool falharam em cerca de 7,2 s.
+Leituras reais posteriores confirmaram init_boot ainda igual ao patch inicial.
+Downloads/init_boot_pos_falha.img/init_boot.img era uma cópia local do original,
+não um READ do aparelho; não foi usada como prova da restauração.
+
+14/10 10:26 e 10:40: tentativas COM diretas de envio dos 8 MiB em uma operação.
+Ambas pararam por timeout após 8257536 bytes reportados pelo driver, sem ACK final.
+Não foram enviadas novas consultas na sessão de estado raw incerto.
+Após reinício físico e novo BOOT DEVICE, leituras completas confirmaram
+init_boot ainda idêntico à imagem modificada inicial. Nenhuma alteração observada.
+
+14/10: tentativa de abrir transporte nativo UsbDk falhou antes de qualquer
+comando de leitura/escrita desse cliente. Não houve gravação via UsbDk.
+O USB apresentou temporariamente Code 43/erro de descritor e voltou a
+Qualcomm 9008/COM1 após reconexão pelo proprietário. Essa via foi abandonada.
+Não foram instalados drivers globais nem alteradas proteções do Windows.
+
+14/10 11:29: teste COM em oito blocos de 1 MiB, payload 16384,
+ZLPAwareHost=0, RTS/CTS e DSR/DTR habilitados. GPT, vbmeta e hash do original
+foram verificados antes de PROGRAM. O primeiro bloco recebeu a recusa
+explícita de endereço e NAK. A leitura do bloco e a leitura final completa
+confirmaram ausência de alteração. Nenhum ERASE, escrita de outras partições,
+patch de loader ou mudança de vbmeta foi executado pelos clientes diretos.
+
+PONTO CONCRETO PARA SUPORTE UNLOCKTOOL
+O perfil Samsung S24 Ultra BIT-6/SM-S928B, build S928BXXU6ZZI4,
+autentica e lê, mas o Firehose Jun 10 2026 - 14:28:02 devolve:
+"Start sector 188944 not allowed for LUN 0 through EDL Flash".
+Solicitar confirmação de qual perfil/programmer e autorização oficiais
+permitem PROGRAM de init_boot (LUN0, setores 188944..190991) nesse modelo.
+O original foi verificado contra o vbmeta atual. O objetivo é somente
+restaurar init_boot, preservando dados, GPT e as demais partições.
+Não foi confirmado que trocar cliente, XML ou driver remove essa restrição.
+
+EVIDÊNCIAS LOCAIS
+outputs/s24-edl-diagnostico/fragmented_write_result.json
+  Comando PROGRAM, respostas Firehose e mensagem explícita de recusa.
+outputs/s24-edl-diagnostico/current_read_post_fragmented.json
+  Leitura final completa posterior à tentativa de 11:29.
+outputs/s24-edl-diagnostico/init_boot_atual.img
+  Os 8 MiB lidos do aparelho após o NAK.
+outputs/s24-edl-diagnostico/direct_write_attempt_1.json
+outputs/s24-edl-diagnostico/direct_write_attempt_2.json
+outputs/s24-edl-diagnostico/pre_write_validation.json
+outputs/s24-initboot-audit/comparacao_pos_write_22-03.json
