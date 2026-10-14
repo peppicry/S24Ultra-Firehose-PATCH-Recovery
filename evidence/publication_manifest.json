@@ -401,9 +401,9 @@
     },
     {
       "path": "README.md",
-      "bytes": 13058,
-      "sha256": "20c5f470f5dd444001c2651ab619230ad8bfe5665891354c2439a61ee37c43b0",
-      "git_blob_sha1": "491bff3696de2cada195e9d75327d3924522822d"
+      "bytes": 15902,
+      "sha256": "1ee54fda3abd7f8ef0a98c98444e4d47f3a6c7d571722f638c9a5880c0beb703",
+      "git_blob_sha1": "45873bc69e31727bfe08f111f302f15ffbc42bcf"
     },
     {
       "path": "tests/test_offline.py",

@@ -1,6 +1,6 @@
 # Samsung S24 Ultra: recuperação de `init_boot` pela sessão Firehose do UnlockTool
 
-Registro técnico de um caso concluído em **14/10/2026**, no **SM-S928B, BIT-6**, build identificada **S928BXXU6ZZI4**. O aparelho apresentava `SECURE CHECK FAIL: init_boot(3)` e estava acessível em Qualcomm 9008/EDL. O comando Firehose `PROGRAM` recusava o início de `init_boot`; o comando `PATCH` do **mesmo programmer já carregado** permitiu restaurar as palavras originais. A leitura final dos **8.388.608 bytes** ficou idêntica ao original. O proprietário confirmou que, após reiniciar, abriu o Android.
+Registro técnico de um caso concluído em **14/10/2026**, no **SM-S928B, BIT-6**, build identificada **S928BXXU6ZZI4**. O aparelho apresentava `SECURE CHECK FAIL: init_boot(3)` e estava acessível em Qualcomm 9008/EDL. O comando Firehose `PROGRAM` recusava o início de `init_boot`; o comando `PATCH`, enviado a sessões Firehose preparadas pelo UnlockTool, permitiu restaurar as palavras originais. Os clientes reutilizaram o estado acessível sem carregar outro programmer; a identidade binária entre todas as sessões não foi confirmada. A leitura final dos **8.388.608 bytes** ficou idêntica ao original. O proprietário confirmou que, após reiniciar, abriu o Android.
 
 **Este repositório é um arquivo de investigação e uma reprodução offline.** As ferramentas executáveis analisam arquivos locais. Os clientes históricos que acessavam COM/USB estão arquivados como `.py.txt`, sem serem importados ou executados pelos testes. A preparação deste repositório não enviou comandos ao aparelho.
 
@@ -19,8 +19,39 @@ Registro técnico de um caso concluído em **14/10/2026**, no **SM-S928B, BIT-6*
 - [Integridade, hashes e plano de restauração](docs/integrity.md)
 - [Inventário dos códigos e evidências](docs/archive.md)
 - [Fatos, hipóteses e limitações](docs/findings-and-limits.md)
+- [Investigação complementar: sete questões, antecedentes e limites](docs/investigacao-complementar.md)
 - [Preservação e remoção de informações sensíveis](docs/privacy.md)
 - [Referências técnicas](docs/references.md)
+
+## Investigação complementar e verificação posterior
+
+A [investigação complementar](docs/investigacao-complementar.md) reúne as sete questões técnicas, suas fontes e os limites das conclusões. A técnica de escrita PATCH já tinha antecedentes publicados pela Hydra em 2022 e pela UMT em 2023. Esses registros não identificam o binário utilizado neste S24 nem demonstram suas regras internas de autorização. A causa exata dos timeouts permanece desconhecida; o suplemento detalha também as diferenças históricas na GPT e as limitações dos clientes Python.
+
+O PROGRAM fragmentado que recebeu NAK e os PATCH bem-sucedidos ocorreram na **COM1**. As tentativas diretas anteriores ocorreram na COM20. A mesma porta COM não comprova estados internos idênticos entre sessões.
+
+Após a recuperação por PATCH, o proprietário informou ter instalado o firmware completo da **One UI 8.5 pelo Odin, com configurações padrão**. Em **14/10/2026**, forneceu esta saída de uma verificação posterior feita no aparelho:
+
+```text
+=== VERIFICACAO GPT / MBR ===
+uid=0(root) gid=0(root) groups=0(root) context=u:r:ksu:s0
+init_boot: /dev/block/sda28
+Tamanho do setor: 4096
+=== SIZE IN LBA ===
+Valor esperado: 124888063
+Valor encontrado: 124888063
+=== TIPO MBR (esperado ee) ===
+ ee
+=== ASSINATURA MBR (esperado 55 aa) ===
+ 55 aa
+=== CABECALHO GPT (esperado EFI PART) ===
+   E   F   I       P   A   R   T
+=== RESULTADO SIZE IN LBA ===
+OK: campo corresponde ao tamanho esperado.
+```
+
+**Evidência fornecida pelo proprietário:** a saída informa `SizeInLBA=124888063`, tipo protetor `0xEE`, assinatura MBR `55 AA` e identificação GPT `EFI PART`. O tamanho informado coincide com o campo do backup histórico anterior ao ERASE relatado, em vez do zero observado nos dumps posteriores daquele período. A declaração do suplemento de que o MBR atual ainda não havia sido verificado descreve o conhecimento anterior a esta nova saída.
+
+Não houve novo acesso ao aparelho por estes clientes. A saída textual não inclui o comando completo, um dump do MBR ou os CRCs do header, da matriz de entradas e da GPT secundária; portanto, não constitui uma validação integral da GPT. A sequência relatada é compatível com o campo ter sido corrigido depois da instalação pelo Odin, mas não demonstra qual operação produziu a correção. Os dumps e resultados históricos continuam preservados.
 
 ## 1. Problema inicial e escolha do original
 
@@ -62,7 +93,7 @@ O cliente Python utilizou **pySerial 3.5**, diretamente sobre a COM exposta pelo
 
 ## 3. Por que as primeiras tentativas não comprovaram gravação
 
-Os envios via UnlockTool chegavam a 100% e terminavam em `FAIL`, em aproximadamente 7,2 segundos. Duas tentativas COM diretas de envio de 8 MiB terminaram por timeout depois de **8.257.536 bytes reportados pelo driver**, sem ACK final. As leituras após novas sessões continuaram iguais à imagem modificada.
+Os envios via UnlockTool chegavam a 100% e terminavam em `FAIL`, em aproximadamente 7,2 segundos. Duas tentativas COM diretas de envio de 8 MiB terminaram por timeout depois de **8.257.536 bytes contabilizados pelo cliente após chamadas write concluídas**, sem ACK final. Esse contador não mede a persistência na UFS nem inclui uma eventual transferência parcial da chamada que terminou com exceção. As leituras após novas sessões continuaram iguais à imagem modificada.
 
 O teste de `PROGRAM` em blocos de 1 MiB finalmente capturou:
 
